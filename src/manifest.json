@@ -1,0 +1,14 @@
+{
+  "name": "Tab Mom",
+  "version": "0.1",
+  "description": "Tab Mom",
+  "permissions": [
+    "tabs"
+  ],
+  "browser_action": {
+      "default_title": "Tab Mom",
+      "default_icon": "tabmom.png",
+      "default_popup": "popup.html"
+  },
+  "manifest_version": 2
+}
