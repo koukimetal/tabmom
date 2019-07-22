@@ -6,11 +6,12 @@ module.exports = {
     target: 'web',
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'popup.js',
+        filename: '[name].js',
     },
     devtool: 'inline-source-map',
     entry: {
-        app: './src/popup.tsx',
+        popup: './src/popup.tsx',
+        background: './src/background.ts'
     },
     context: path.join(__dirname),
     module: {
