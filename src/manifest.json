@@ -3,7 +3,7 @@
   "version": "0.1",
   "description": "Tab Mom",
   "permissions": [
-    "tabs", "alarms"
+    "tabs", "alarms", "storage"
   ],
   "background": {
     "scripts": ["background.js"],
