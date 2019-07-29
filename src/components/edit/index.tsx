@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { AppState } from 'components/store';
 import { EditModalState, updateName, saveRule, cancelModal } from './editModal';
 import Modal from '@material-ui/core/Modal';
-import { TextField, Theme, createStyles, WithStyles, Button } from '@material-ui/core';
+import { TextField, Theme, createStyles, WithStyles, Button, Paper } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
 
 const styles = (theme: Theme) =>
@@ -43,16 +43,22 @@ class EditModalInner extends React.Component<Props> {
         return (
             <Modal open={edit.open} onClose={this.close}>
                 <>
-                    <TextField
+                <Paper>
+                    <div>
+                <TextField
                         label="Name"
                         className={classes.textField}
                         value={edit.name}
                         onChange={this.changeName}
                         margin="normal"
                     />
-                    <Button variant="contained" color="primary" className={classes.button} onClick={this.save}>
+                    </div>
+                    <div>                    <Button variant="contained" color="primary" className={classes.button} onClick={this.save}>
                         Save
                     </Button>
+                    </div>
+      </Paper>
+
                 </>
             </Modal>
         );
