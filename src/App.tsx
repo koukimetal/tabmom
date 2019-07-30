@@ -5,6 +5,7 @@ import { Controller } from './components/controller';
 import { EditModal } from './components/edit';
 import { createMuiTheme } from '@material-ui/core';
 import { ThemeProvider } from '@material-ui/styles';
+import { RuleTable } from './components/table';
 
 const theme = createMuiTheme({});
 
@@ -15,6 +16,7 @@ export const App: React.SFC<{}> = () => {
             <Provider store={store}>
                 <EditModal />
                 <Controller />
+                <RuleTable />
             </Provider>
         </ThemeProvider>
     );
