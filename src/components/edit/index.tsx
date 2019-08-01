@@ -82,8 +82,6 @@ class EditModalInner extends React.Component<Props> {
 
     public render() {
         const { edit, classes, validInput } = this.props;
-
-        console.log(validInput);
         return (
             <Modal open={edit.open} onClose={this.close}>
                 <>
@@ -155,7 +153,6 @@ class EditModalInner extends React.Component<Props> {
 }
 
 const validator = (editState: EditModalState) => {
-    console.log(Number.isInteger(parseInt(editState.period)));
     return Number.isInteger(parseInt(editState.period));
 };
 

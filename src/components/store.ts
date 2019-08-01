@@ -1,4 +1,4 @@
-import { tableReducer } from './table/actions';
+import { tableReducer, CronRule } from './table/actions';
 import { editModalReducer } from './edit/actions';
 import { combineReducers, applyMiddleware, createStore } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
@@ -8,11 +8,15 @@ const rootReducer = combineReducers({
     table: tableReducer,
 });
 
-export const configureStore = () => {
+export const configureStore = (rules: CronRule[]) => {
     const middlewares: any[] = [];
     const middleWareEnhancer = applyMiddleware(...middlewares);
 
-    const store = createStore(rootReducer, composeWithDevTools(middleWareEnhancer));
+    const store = createStore(rootReducer, {
+        table: {
+            rules
+        }
+    }, composeWithDevTools(middleWareEnhancer));
 
     return store;
 };
