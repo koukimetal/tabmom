@@ -1,11 +1,12 @@
+import { CronRule } from './../table/actions';
 import { combineReducers } from 'redux';
 const UPDATE_URL = '@edit/UPDATE_URL';
 const UPDATE_NAME = '@edit/UPDATE_NAME';
 const UPDATE_PERIOD = '@edit/UPDATE_PERIOD';
 const UPDATE_ACTIVE = '@edit/UPDATE_ACTIVE';
-const UPDATE_REGEX = '@edit/UPDATE_REGEX';
 
-const OPEN_MODAL = '@edit/OPEN_MODAL';
+const OPEN_MODAL_CREATE = '@edit/OPEN_MODAL_CREATE';
+const OPEN_MODAL_EDIT = '@edit/OPEN_MODAL_EDIT';
 const CLOSE_MODAL = '@edit/CLOSE_MODAL';
 
 interface NameAction {
@@ -28,36 +29,65 @@ interface ActiveAction {
     active: boolean;
 }
 
-interface RegexAction {
-    type: typeof UPDATE_REGEX;
-    regex: boolean;
+interface OpenCreateAction {
+    type: typeof OPEN_MODAL_CREATE;
 }
 
-interface OpenAction {
-    type: typeof OPEN_MODAL;
+interface OpenEditAction {
+    type: typeof OPEN_MODAL_EDIT;
+    rule: CronRule;
+    index: number;
 }
 
 interface CloseAction {
     type: typeof CLOSE_MODAL;
 }
 
-type EditModalAction = NameAction | UrlAction | PeriodAction | OpenAction | CloseAction | RegexAction | ActiveAction;
+export enum ModalMode {
+    CREATE,
+    EDIT,
+    CLOSED,
+}
+
+type EditModalAction =
+    | NameAction
+    | UrlAction
+    | PeriodAction
+    | OpenCreateAction
+    | CloseAction
+    | ActiveAction
+    | OpenEditAction;
 
 export interface EditModalState {
     period: string;
     name: string;
     url: string;
-    regex: boolean;
     active: boolean;
-    open: boolean;
+    mode: ModalMode;
+    editIndex: number;
 }
 
-const openReducer = (state = false, action: EditModalAction) => {
+const modalModeReducer = (state = ModalMode.CLOSED, action: EditModalAction) => {
     switch (action.type) {
-        case OPEN_MODAL:
-            return true;
+        case OPEN_MODAL_CREATE:
+            return ModalMode.CREATE;
+        case OPEN_MODAL_EDIT:
+            return ModalMode.EDIT;
         case CLOSE_MODAL:
-            return false;
+            return ModalMode.CLOSED;
+        default:
+            return state;
+    }
+};
+
+const editIndexReducer = (state = -1, action: EditModalAction) => {
+    switch (action.type) {
+        case OPEN_MODAL_CREATE:
+            return -1;
+        case OPEN_MODAL_EDIT:
+            return action.index;
+        case CLOSE_MODAL:
+            return -1;
         default:
             return state;
     }
@@ -76,6 +106,8 @@ const nameReducer = (state = '', action: EditModalAction) => {
     switch (action.type) {
         case UPDATE_NAME:
             return action.name;
+        case OPEN_MODAL_EDIT:
+            return action.rule.name;
         default:
             return defaultReducer(state, '', action);
     }
@@ -85,6 +117,8 @@ const urlReducer = (state = '', action: EditModalAction) => {
     switch (action.type) {
         case UPDATE_URL:
             return action.url;
+        case OPEN_MODAL_EDIT:
+            return action.rule.url;
         default:
             return defaultReducer(state, '', action);
     }
@@ -94,6 +128,8 @@ const periodReducer = (state = '', action: EditModalAction) => {
     switch (action.type) {
         case UPDATE_PERIOD:
             return action.period;
+        case OPEN_MODAL_EDIT:
+            return action.rule.period.toString();
         default:
             return defaultReducer(state, '', action);
     }
@@ -103,23 +139,24 @@ const activeReducer = (state = true, action: EditModalAction) => {
     switch (action.type) {
         case UPDATE_ACTIVE:
             return action.active;
+        case OPEN_MODAL_EDIT:
+            return action.rule.active;
         default:
             return defaultReducer(state, true, action);
     }
 };
 
-const regexReducer = (state = false, action: EditModalAction) => {
-    switch (action.type) {
-        case UPDATE_REGEX:
-            return action.regex;
-        default:
-            return defaultReducer(state, false, action);
-    }
+export const openModal = (): OpenCreateAction => {
+    return {
+        type: OPEN_MODAL_CREATE,
+    };
 };
 
-export const openModal = (): OpenAction => {
+export const editModal = (rule: CronRule, index: number): OpenEditAction => {
     return {
-        type: OPEN_MODAL,
+        type: OPEN_MODAL_EDIT,
+        rule,
+        index,
     };
 };
 
@@ -155,18 +192,11 @@ export const updateActive = (active: boolean): ActiveAction => {
     };
 };
 
-export const updateRegex = (regex: boolean): RegexAction => {
-    return {
-        type: UPDATE_REGEX,
-        regex,
-    };
-};
-
 export const editModalReducer = combineReducers<EditModalState, EditModalAction>({
     name: nameReducer,
     url: urlReducer,
     period: periodReducer,
-    open: openReducer,
-    regex: regexReducer,
+    mode: modalModeReducer,
     active: activeReducer,
+    editIndex: editIndexReducer,
 });

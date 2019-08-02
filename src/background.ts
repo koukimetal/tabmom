@@ -1,12 +1,17 @@
+import { getRules } from './proxy';
 const main = () => {
-    (window as any).a = 3;
     chrome.alarms.create('MINUTE', { periodInMinutes: 1 });
-    chrome.alarms.onAlarm.addListener(alarm => {
-        (window as any).a = (window as any).a + 1;
-        console.log((window as any).a);
-        // if (alarm.name === 'MINUTE') {
-        //     chrome.tabs.create({ url: 'https://mail.google.com/mail/' });
-        // }
+    let counter = 0;
+    chrome.alarms.onAlarm.addListener(async alarm => {
+        if (alarm.name === 'MINUTE') {
+            counter++;
+            const rules = await getRules();
+            rules.forEach(rule => {
+                if (counter % rule.period === 0) {
+                    chrome.tabs.create({ url: rule.url });
+                }
+            });
+        }
     });
 };
 

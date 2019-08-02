@@ -12,11 +12,15 @@ export const configureStore = (rules: CronRule[]) => {
     const middlewares: any[] = [];
     const middleWareEnhancer = applyMiddleware(...middlewares);
 
-    const store = createStore(rootReducer, {
-        table: {
-            rules
-        }
-    }, composeWithDevTools(middleWareEnhancer));
+    const store = createStore(
+        rootReducer,
+        {
+            table: {
+                rules,
+            },
+        },
+        composeWithDevTools(middleWareEnhancer),
+    );
 
     return store;
 };

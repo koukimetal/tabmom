@@ -5,7 +5,7 @@ import { getRules } from './proxy';
 
 const main = async () => {
     const rules = await getRules();
-    ReactDOM.render(<App rules={rules}/>, document.getElementById('main'));
+    ReactDOM.render(<App rules={rules} />, document.getElementById('main'));
 };
 
 (async () => {

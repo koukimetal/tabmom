@@ -11,14 +11,14 @@ import { saveRules } from './proxy';
 
 const theme = createMuiTheme({});
 interface Props {
-    rules: CronRule[]
+    rules: CronRule[];
 }
-export const App: React.SFC<Props> = (props) => {
+export const App: React.SFC<Props> = props => {
     const store = configureStore(props.rules);
 
     let previous = props.rules;
     store.subscribe(() => {
-        const {rules} = store.getState().table;
+        const { rules } = store.getState().table;
         if (previous !== rules) {
             saveRules(rules);
             previous = rules;

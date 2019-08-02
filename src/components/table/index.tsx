@@ -11,10 +11,12 @@ import {
     TableRow,
     TableCell,
     TableBody,
+    IconButton,
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
 import { TableState } from './actions';
-import { Mood as TrueIcon, MoodBad as FalseIcon } from '@material-ui/icons';
+import { editModal } from '../edit/actions';
+import { Edit as EditIcon, HighlightOff as OffIcon } from '@material-ui/icons';
 
 const styles = (theme: Theme) =>
     createStyles({
@@ -23,22 +25,33 @@ const styles = (theme: Theme) =>
             marginTop: theme.spacing(3),
             overflowX: 'auto',
         },
-        active: {
-          width: 10
+        edit: {
+            width: 10,
         },
         period: {
-          width: 10
+            width: 10,
         },
         table: {
             minWidth: 600,
         },
     });
 
-interface Props extends WithStyles<typeof styles> {
+interface DispatchProps {
+    editModal: typeof editModal;
+}
+
+interface StateProps {
     table: TableState;
 }
 
+interface Props extends DispatchProps, StateProps, WithStyles<typeof styles> {}
+
 class RuleTableInner extends React.Component<Props> {
+    private edit = (idx: number) => {
+        const { table } = this.props;
+        this.props.editModal(table.rules[idx], idx);
+    };
+
     public render() {
         const { table, classes } = this.props;
 
@@ -47,7 +60,7 @@ class RuleTableInner extends React.Component<Props> {
                 <Table className={classes.table}>
                     <TableHead>
                         <TableRow>
-                            <TableCell className={classes.active}>Active</TableCell>
+                            <TableCell className={classes.edit}>Edit</TableCell>
                             <TableCell className={classes.period}>Period</TableCell>
                             <TableCell>Title</TableCell>
                         </TableRow>
@@ -55,8 +68,12 @@ class RuleTableInner extends React.Component<Props> {
                     <TableBody>
                         {table.rules.map((rule, idx) => (
                             <TableRow key={idx}>
-                                <TableCell>{rule.active ? <TrueIcon/> : <FalseIcon />}</TableCell>
-                                <TableCell>{rule.period.toString()}</TableCell>
+                                <TableCell>
+                                    <IconButton aria-label="edit" size="small" onClick={() => this.edit(idx)}>
+                                        <EditIcon fontSize="inherit" />
+                                    </IconButton>
+                                </TableCell>
+                                <TableCell>{rule.active ? rule.period.toString() : <OffIcon />}</TableCell>
                                 <TableCell component="th" scope="row">
                                     {rule.name}
                                 </TableCell>
@@ -75,5 +92,5 @@ const mapStateToProps = (state: AppState) => ({
 
 export const RuleTable = connect(
     mapStateToProps,
-    {},
+    { editModal },
 )(withStyles(styles)(RuleTableInner));

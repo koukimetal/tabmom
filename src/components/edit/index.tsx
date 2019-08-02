@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { AppState } from 'components/store';
-import { EditModalState, updateName, closeModal, updatePeriod, updateUrl, updateActive, updateRegex } from './actions';
+import { EditModalState, updateName, closeModal, updatePeriod, updateUrl, updateActive, ModalMode } from './actions';
 import Modal from '@material-ui/core/Modal';
 import {
     TextField,
@@ -15,7 +15,7 @@ import {
     Checkbox,
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
-import { CronRule, addRule } from '../table/actions';
+import { CronRule, addRule, updateRule, deleteRule } from '../table/actions';
 
 const styles = (theme: Theme) =>
     createStyles({
@@ -35,8 +35,9 @@ interface DispatchProps {
     updatePeriod: typeof updatePeriod;
     updateUrl: typeof updateUrl;
     updateActive: typeof updateActive;
-    updateRegex: typeof updateRegex;
     addRule: typeof addRule;
+    updateRule: typeof updateRule;
+    deleteRule: typeof deleteRule;
 }
 
 interface StateProps {
@@ -59,23 +60,29 @@ class EditModalInner extends React.Component<Props> {
     private toggleActive = () => {
         this.props.updateActive(!this.props.edit.active);
     };
-    private toggleRegex = () => {
-        this.props.updateRegex(!this.props.edit.regex);
-    };
 
     private save = () => {
         const { edit } = this.props;
         const rule: CronRule = {
             name: edit.name,
             period: parseInt(edit.period),
-            regex: edit.regex,
             active: edit.active,
             url: edit.url,
         };
-
-        this.props.addRule(rule);
+        if (edit.editIndex >= 0) {
+            this.props.updateRule(rule, edit.editIndex);
+        } else {
+            this.props.addRule(rule);
+        }
         this.props.closeModal();
     };
+
+    private delete = () => {
+        const { edit } = this.props;
+        this.props.deleteRule(edit.editIndex);
+        this.props.closeModal();
+    };
+
     private close = () => {
         this.props.closeModal();
     };
@@ -83,7 +90,7 @@ class EditModalInner extends React.Component<Props> {
     public render() {
         const { edit, classes, validInput } = this.props;
         return (
-            <Modal open={edit.open} onClose={this.close}>
+            <Modal open={edit.mode !== ModalMode.CLOSED} onClose={this.close}>
                 <>
                     <Paper>
                         <div>
@@ -125,12 +132,6 @@ class EditModalInner extends React.Component<Props> {
                                     }
                                     label="Active"
                                 />
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox checked={edit.regex} onChange={this.toggleRegex} value={edit.regex} />
-                                    }
-                                    label="Regex"
-                                />
                             </FormGroup>
                         </div>
 
@@ -144,6 +145,17 @@ class EditModalInner extends React.Component<Props> {
                             >
                                 Save
                             </Button>
+                            {edit.mode === ModalMode.EDIT && (
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    className={classes.button}
+                                    onClick={this.delete}
+                                    disabled={!validInput}
+                                >
+                                    Delete
+                                </Button>
+                            )}
                         </div>
                     </Paper>
                 </>
@@ -163,5 +175,5 @@ const mapStateToProps = (state: AppState) => ({
 
 export const EditModal = connect<StateProps, DispatchProps>(
     mapStateToProps,
-    { updateName, closeModal, updateUrl, updatePeriod, updateRegex, updateActive, addRule },
+    { updateName, closeModal, updateUrl, updatePeriod, updateActive, addRule, deleteRule, updateRule },
 )(withStyles(styles)(EditModalInner));
