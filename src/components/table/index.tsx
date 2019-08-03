@@ -30,7 +30,7 @@ const styles = (theme: Theme) =>
             width: 10,
         },
         period: {
-            width: 10,
+            width: 60,
         },
         table: {
             minWidth: 600,
@@ -43,6 +43,7 @@ interface DispatchProps {
 
 interface StateProps {
     table: TableState;
+    counter: number;
 }
 
 interface Props extends DispatchProps, StateProps, WithStyles<typeof styles> {}
@@ -58,7 +59,7 @@ class RuleTableInner extends React.Component<Props> {
     };
 
     public render() {
-        const { table, classes } = this.props;
+        const { table, classes, counter } = this.props;
 
         return (
             <Paper className={classes.root}>
@@ -66,7 +67,7 @@ class RuleTableInner extends React.Component<Props> {
                     <TableHead>
                         <TableRow>
                             <TableCell className={classes.edit}>Edit</TableCell>
-                            <TableCell className={classes.period}>Period</TableCell>
+                            <TableCell className={classes.period}>Rmn / Prd</TableCell>
                             <TableCell>Title</TableCell>
                         </TableRow>
                     </TableHead>
@@ -78,7 +79,15 @@ class RuleTableInner extends React.Component<Props> {
                                         <EditIcon fontSize="inherit" />
                                     </IconButton>
                                 </TableCell>
-                                <TableCell>{rule.active ? rule.period.toString() : <OffIcon />}</TableCell>
+                                <TableCell>
+                                    {rule.active ? (
+                                        (rule.period - (counter % rule.period)).toString() +
+                                        ' / ' +
+                                        rule.period.toString()
+                                    ) : (
+                                        <OffIcon />
+                                    )}
+                                </TableCell>
                                 <TableCell component="th" scope="row">
                                     <Link
                                         component="button"
@@ -100,6 +109,7 @@ class RuleTableInner extends React.Component<Props> {
 
 const mapStateToProps = (state: AppState) => ({
     table: state.table,
+    counter: state.controller.counter,
 });
 
 export const RuleTable = connect(

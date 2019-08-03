@@ -1,4 +1,6 @@
-import { tableReducer, CronRule } from './table/actions';
+import { controllerReducer } from './controller/actions';
+import { AppProps } from './../App';
+import { tableReducer } from './table/actions';
 import { editModalReducer } from './edit/actions';
 import { combineReducers, applyMiddleware, createStore } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
@@ -6,9 +8,10 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 const rootReducer = combineReducers({
     edit: editModalReducer,
     table: tableReducer,
+    controller: controllerReducer,
 });
 
-export const configureStore = (rules: CronRule[]) => {
+export const configureStore = (appProps: AppProps) => {
     const middlewares: any[] = [];
     const middleWareEnhancer = applyMiddleware(...middlewares);
 
@@ -16,7 +19,10 @@ export const configureStore = (rules: CronRule[]) => {
         rootReducer,
         {
             table: {
-                rules,
+                rules: appProps.rules,
+            },
+            controller: {
+                counter: appProps.counter,
             },
         },
         composeWithDevTools(middleWareEnhancer),

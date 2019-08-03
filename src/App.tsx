@@ -7,14 +7,16 @@ import { createMuiTheme } from '@material-ui/core';
 import { ThemeProvider } from '@material-ui/styles';
 import { RuleTable } from './components/table';
 import { CronRule } from './components/table/actions';
-import { saveRules } from './proxy';
+import { saveRules, CounterMessage, TabMomMessage, MessageType } from './proxy';
+import { setCounter } from './components/controller/actions';
 
 const theme = createMuiTheme({});
-interface Props {
+export interface AppProps {
     rules: CronRule[];
+    counter: number;
 }
-export const App: React.SFC<Props> = props => {
-    const store = configureStore(props.rules);
+export const App: React.SFC<AppProps> = props => {
+    const store = configureStore(props);
 
     let previous = props.rules;
     store.subscribe(() => {
@@ -22,6 +24,11 @@ export const App: React.SFC<Props> = props => {
         if (previous !== rules) {
             saveRules(rules);
             previous = rules;
+        }
+    });
+    chrome.runtime.onMessage.addListener((message: TabMomMessage) => {
+        if (message.type === MessageType.COUNTER) {
+            store.dispatch(setCounter(message.counter));
         }
     });
     return (
