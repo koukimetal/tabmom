@@ -12,6 +12,7 @@ import {
     TableCell,
     TableBody,
     IconButton,
+    Link,
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
 import { TableState } from './actions';
@@ -52,6 +53,10 @@ class RuleTableInner extends React.Component<Props> {
         this.props.editModal(table.rules[idx], idx);
     };
 
+    private openLink = (url: string) => {
+        chrome.tabs.create({ url });
+    };
+
     public render() {
         const { table, classes } = this.props;
 
@@ -75,7 +80,14 @@ class RuleTableInner extends React.Component<Props> {
                                 </TableCell>
                                 <TableCell>{rule.active ? rule.period.toString() : <OffIcon />}</TableCell>
                                 <TableCell component="th" scope="row">
-                                    {rule.name}
+                                    <Link
+                                        component="button"
+                                        onClick={() => {
+                                            this.openLink(rule.url);
+                                        }}
+                                    >
+                                        {rule.name}
+                                    </Link>
                                 </TableCell>
                             </TableRow>
                         ))}

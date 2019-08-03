@@ -4,7 +4,7 @@ import { AppState } from 'components/store';
 import { openModal } from '../edit/actions';
 import { Theme, createStyles, WithStyles, Button } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
-
+import { Create as CreateIcon } from '@material-ui/icons';
 const styles = (theme: Theme) =>
     createStyles({
         button: {
@@ -26,6 +26,7 @@ class ControllerInner extends React.Component<Props> {
 
         return (
             <Button variant="contained" color="primary" className={classes.button} onClick={this.open}>
+                <CreateIcon />
                 CREATE
             </Button>
         );

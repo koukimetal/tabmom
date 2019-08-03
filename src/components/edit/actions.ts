@@ -9,6 +9,8 @@ const OPEN_MODAL_CREATE = '@edit/OPEN_MODAL_CREATE';
 const OPEN_MODAL_EDIT = '@edit/OPEN_MODAL_EDIT';
 const CLOSE_MODAL = '@edit/CLOSE_MODAL';
 
+const UPDATE_DELETE_FLAG = '@edit/UPDATE_DELETE_FLAG';
+
 interface NameAction {
     type: typeof UPDATE_NAME;
     name: string;
@@ -39,6 +41,11 @@ interface OpenEditAction {
     index: number;
 }
 
+interface DeleteFlagAction {
+    type: typeof UPDATE_DELETE_FLAG;
+    flag: boolean;
+}
+
 interface CloseAction {
     type: typeof CLOSE_MODAL;
 }
@@ -56,6 +63,7 @@ type EditModalAction =
     | OpenCreateAction
     | CloseAction
     | ActiveAction
+    | DeleteFlagAction
     | OpenEditAction;
 
 export interface EditModalState {
@@ -65,6 +73,7 @@ export interface EditModalState {
     active: boolean;
     mode: ModalMode;
     editIndex: number;
+    deleteFlag: boolean;
 }
 
 const modalModeReducer = (state = ModalMode.CLOSED, action: EditModalAction) => {
@@ -99,6 +108,15 @@ const defaultReducer = <T>(state: T, initialValue: T, action: EditModalAction) =
             return initialValue;
         default:
             return state;
+    }
+};
+
+const deleteFlagReducer = (state = false, action: EditModalAction) => {
+    switch (action.type) {
+        case UPDATE_DELETE_FLAG:
+            return action.flag;
+        default:
+            return defaultReducer(state, false, action);
     }
 };
 
@@ -192,6 +210,13 @@ export const updateActive = (active: boolean): ActiveAction => {
     };
 };
 
+export const updateDeleteFlag = (flag: boolean): DeleteFlagAction => {
+    return {
+        type: UPDATE_DELETE_FLAG,
+        flag,
+    };
+};
+
 export const editModalReducer = combineReducers<EditModalState, EditModalAction>({
     name: nameReducer,
     url: urlReducer,
@@ -199,4 +224,5 @@ export const editModalReducer = combineReducers<EditModalState, EditModalAction>
     mode: modalModeReducer,
     active: activeReducer,
     editIndex: editIndexReducer,
+    deleteFlag: deleteFlagReducer,
 });

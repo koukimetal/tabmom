@@ -1,7 +1,16 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { AppState } from 'components/store';
-import { EditModalState, updateName, closeModal, updatePeriod, updateUrl, updateActive, ModalMode } from './actions';
+import {
+    EditModalState,
+    updateName,
+    closeModal,
+    updatePeriod,
+    updateUrl,
+    updateActive,
+    ModalMode,
+    updateDeleteFlag,
+} from './actions';
 import Modal from '@material-ui/core/Modal';
 import {
     TextField,
@@ -16,6 +25,7 @@ import {
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
 import { CronRule, addRule, updateRule, deleteRule } from '../table/actions';
+import { Save as SaveIcon, Delete as DeleteIcon } from '@material-ui/icons';
 
 const styles = (theme: Theme) =>
     createStyles({
@@ -38,6 +48,7 @@ interface DispatchProps {
     addRule: typeof addRule;
     updateRule: typeof updateRule;
     deleteRule: typeof deleteRule;
+    updateDeleteFlag: typeof updateDeleteFlag;
 }
 
 interface StateProps {
@@ -85,6 +96,11 @@ class EditModalInner extends React.Component<Props> {
 
     private close = () => {
         this.props.closeModal();
+    };
+
+    private toggleDeleteFlag = () => {
+        const { edit } = this.props;
+        this.props.updateDeleteFlag(!edit.deleteFlag);
     };
 
     public render() {
@@ -143,18 +159,34 @@ class EditModalInner extends React.Component<Props> {
                                 onClick={this.save}
                                 disabled={!validInput}
                             >
+                                <SaveIcon />
                                 Save
                             </Button>
                             {edit.mode === ModalMode.EDIT && (
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    className={classes.button}
-                                    onClick={this.delete}
-                                    disabled={!validInput}
-                                >
-                                    Delete
-                                </Button>
+                                <>
+                                    <Button
+                                        variant="contained"
+                                        color="secondary"
+                                        className={classes.button}
+                                        onClick={this.delete}
+                                        disabled={!edit.deleteFlag}
+                                    >
+                                        <DeleteIcon />
+                                        Delete
+                                    </Button>
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={edit.deleteFlag}
+                                                onChange={this.toggleDeleteFlag}
+                                                value={edit.deleteFlag}
+                                                icon={<DeleteIcon />}
+                                                checkedIcon={<DeleteIcon color="secondary" />}
+                                            />
+                                        }
+                                        label=""
+                                    />
+                                </>
                             )}
                         </div>
                     </Paper>
@@ -165,7 +197,8 @@ class EditModalInner extends React.Component<Props> {
 }
 
 const validator = (editState: EditModalState) => {
-    return Number.isInteger(parseInt(editState.period));
+    const period = parseInt(editState.period);
+    return Number.isInteger(period) && period > 0;
 };
 
 const mapStateToProps = (state: AppState) => ({
@@ -175,5 +208,15 @@ const mapStateToProps = (state: AppState) => ({
 
 export const EditModal = connect<StateProps, DispatchProps>(
     mapStateToProps,
-    { updateName, closeModal, updateUrl, updatePeriod, updateActive, addRule, deleteRule, updateRule },
+    {
+        updateName,
+        closeModal,
+        updateUrl,
+        updatePeriod,
+        updateActive,
+        addRule,
+        deleteRule,
+        updateRule,
+        updateDeleteFlag,
+    },
 )(withStyles(styles)(EditModalInner));
