@@ -24,8 +24,9 @@ import {
     Checkbox,
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
-import { CronRule, addRule, updateRule, deleteRule } from '../table/actions';
+import { CronRule, addRule, updateRule, deleteRule, updateCurrent } from '../system/actions';
 import { Save as SaveIcon, Delete as DeleteIcon } from '@material-ui/icons';
+import * as uuidV1 from 'uuid/v1';
 
 const styles = (theme: Theme) =>
     createStyles({
@@ -33,6 +34,10 @@ const styles = (theme: Theme) =>
             marginLeft: theme.spacing(1),
             marginRight: theme.spacing(1),
             width: 200,
+        },
+        fullTextField: {
+            marginLeft: theme.spacing(1),
+            marginRight: theme.spacing(1),
         },
         button: {
             margin: theme.spacing(1),
@@ -49,6 +54,7 @@ interface DispatchProps {
     updateRule: typeof updateRule;
     deleteRule: typeof deleteRule;
     updateDeleteFlag: typeof updateDeleteFlag;
+    updateCurrent: typeof updateCurrent;
 }
 
 interface StateProps {
@@ -74,14 +80,19 @@ class EditModalInner extends React.Component<Props> {
 
     private save = () => {
         const { edit } = this.props;
+        const periodNum = parseInt(edit.period);
+        const id = uuidV1();
         const rule: CronRule = {
+            id,
             name: edit.name,
-            period: parseInt(edit.period),
+            period: periodNum,
             active: edit.active,
             url: edit.url,
         };
-        if (edit.editIndex >= 0) {
-            this.props.updateRule(rule, edit.editIndex);
+
+        this.props.updateCurrent(id, periodNum);
+        if (edit.targetId) {
+            this.props.updateRule(rule, edit.targetId);
         } else {
             this.props.addRule(rule);
         }
@@ -90,7 +101,7 @@ class EditModalInner extends React.Component<Props> {
 
     private delete = () => {
         const { edit } = this.props;
-        this.props.deleteRule(edit.editIndex);
+        this.props.deleteRule(edit.targetId);
         this.props.closeModal();
     };
 
@@ -112,10 +123,11 @@ class EditModalInner extends React.Component<Props> {
                         <div>
                             <TextField
                                 label="Name"
-                                className={classes.textField}
+                                className={classes.fullTextField}
                                 value={edit.name}
                                 onChange={this.changeName}
                                 margin="normal"
+                                fullWidth
                             />
                         </div>
                         <div>
@@ -130,10 +142,11 @@ class EditModalInner extends React.Component<Props> {
                         <div>
                             <TextField
                                 label="URL"
-                                className={classes.textField}
+                                className={classes.fullTextField}
                                 value={edit.url}
                                 onChange={this.changeUrl}
                                 margin="normal"
+                                fullWidth
                             />
                         </div>
                         <div>
@@ -218,5 +231,6 @@ export const EditModal = connect<StateProps, DispatchProps>(
         deleteRule,
         updateRule,
         updateDeleteFlag,
+        updateCurrent,
     },
 )(withStyles(styles)(EditModalInner));

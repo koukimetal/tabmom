@@ -1,13 +1,20 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { App } from './App';
-import { getRules, getCounter } from './proxy';
+import { getRules, getCurrentTime } from './proxy';
+import { CurrentMap } from 'components/system/actions';
 
 const main = async () => {
     const rules = await getRules();
-    const counter = await getCounter();
-    console.log('counter', counter);
-    ReactDOM.render(<App rules={rules} counter={counter} />, document.getElementById('main'));
+    const current: CurrentMap = {};
+
+    await Promise.all(
+        rules.map(async rule => {
+            const time = await getCurrentTime(rule.id);
+            current[rule.id] = time;
+        }),
+    );
+    ReactDOM.render(<App rules={rules} current={current} />, document.getElementById('main'));
 };
 
 (async () => {

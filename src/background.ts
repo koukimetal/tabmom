@@ -1,20 +1,31 @@
-import { getRules, CounterMessage, MessageType, setCounter } from './proxy';
+import { getRules, TimerMessage, MessageType, getCurrentTime, setCurrentTime } from './proxy';
 const main = () => {
     chrome.alarms.create('MINUTE', { periodInMinutes: 1 });
-    let counter = 1;
-    setCounter(counter);
     chrome.alarms.onAlarm.addListener(async alarm => {
         if (alarm.name === 'MINUTE') {
-            const message: CounterMessage = { type: MessageType.COUNTER, counter };
-            setCounter(counter);
-            chrome.runtime.sendMessage(message);
             const rules = await getRules();
-            rules.forEach(rule => {
-                if (counter % rule.period === 0) {
-                    chrome.tabs.create({ url: rule.url });
-                }
-            });
-            counter++;
+            await Promise.all(
+                rules.map(async rule => {
+                    let time = await getCurrentTime(rule.id);
+                    if (!time) {
+                        time = rule.period;
+                    }
+
+                    if (!rule.active) {
+                        return;
+                    }
+
+                    if (time <= 1) {
+                        time = rule.period;
+                        chrome.tabs.create({ url: rule.url });
+                    } else {
+                        time--;
+                    }
+                    await setCurrentTime(rule.id, time);
+                    const message: TimerMessage = { type: MessageType.TIMER, id: rule.id, time };
+                    chrome.runtime.sendMessage(message);
+                }),
+            );
         }
     });
 };

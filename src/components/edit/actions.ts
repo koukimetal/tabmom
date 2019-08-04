@@ -1,4 +1,4 @@
-import { CronRule } from './../table/actions';
+import { CronRule } from './../system/actions';
 import { combineReducers } from 'redux';
 const UPDATE_URL = '@edit/UPDATE_URL';
 const UPDATE_NAME = '@edit/UPDATE_NAME';
@@ -38,7 +38,6 @@ interface OpenCreateAction {
 interface OpenEditAction {
     type: typeof OPEN_MODAL_EDIT;
     rule: CronRule;
-    index: number;
 }
 
 interface DeleteFlagAction {
@@ -56,7 +55,7 @@ export enum ModalMode {
     CLOSED,
 }
 
-type EditModalAction =
+export type EditModalAction =
     | NameAction
     | UrlAction
     | PeriodAction
@@ -72,7 +71,7 @@ export interface EditModalState {
     url: string;
     active: boolean;
     mode: ModalMode;
-    editIndex: number;
+    targetId: string;
     deleteFlag: boolean;
 }
 
@@ -89,14 +88,14 @@ const modalModeReducer = (state = ModalMode.CLOSED, action: EditModalAction) => 
     }
 };
 
-const editIndexReducer = (state = -1, action: EditModalAction) => {
+const targetId = (state: string = null, action: EditModalAction) => {
     switch (action.type) {
         case OPEN_MODAL_CREATE:
-            return -1;
+            return null;
         case OPEN_MODAL_EDIT:
-            return action.index;
+            return action.rule.id;
         case CLOSE_MODAL:
-            return -1;
+            return null;
         default:
             return state;
     }
@@ -170,11 +169,10 @@ export const openModal = (): OpenCreateAction => {
     };
 };
 
-export const editModal = (rule: CronRule, index: number): OpenEditAction => {
+export const editModal = (rule: CronRule): OpenEditAction => {
     return {
         type: OPEN_MODAL_EDIT,
         rule,
-        index,
     };
 };
 
@@ -223,6 +221,6 @@ export const editModalReducer = combineReducers<EditModalState, EditModalAction>
     period: periodReducer,
     mode: modalModeReducer,
     active: activeReducer,
-    editIndex: editIndexReducer,
+    targetId,
     deleteFlag: deleteFlagReducer,
 });

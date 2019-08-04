@@ -6,29 +6,46 @@ import { EditModal } from './components/edit';
 import { createMuiTheme } from '@material-ui/core';
 import { ThemeProvider } from '@material-ui/styles';
 import { RuleTable } from './components/table';
-import { CronRule } from './components/table/actions';
-import { saveRules, CounterMessage, TabMomMessage, MessageType } from './proxy';
-import { setCounter } from './components/controller/actions';
+import {
+    CronRule,
+    CurrentMap,
+    updateCurrent,
+    ADD_RULE as SYSTEM_ADD_RULE,
+    DELETE_RULE as SYSTEM_DELETE_RULE,
+} from './components/system/actions';
+import { saveRules, TabMomMessage, MessageType, setCurrentTime, deleteCurrentTime } from './proxy';
 
 const theme = createMuiTheme({});
 export interface AppProps {
     rules: CronRule[];
-    counter: number;
+    current: CurrentMap;
 }
+
 export const App: React.SFC<AppProps> = props => {
     const store = configureStore(props);
 
-    let previous = props.rules;
+    let previousRule = props.rules;
     store.subscribe(() => {
-        const { rules } = store.getState().table;
-        if (previous !== rules) {
+        const { rules } = store.getState().system;
+        if (previousRule !== rules) {
             saveRules(rules);
-            previous = rules;
+            previousRule = rules;
+        }
+
+        const { lastAction } = store.getState();
+
+        if (lastAction) {
+            if (lastAction.type === SYSTEM_ADD_RULE) {
+                setCurrentTime(lastAction.rule.id, lastAction.rule.period);
+            } else if (lastAction.type === SYSTEM_DELETE_RULE) {
+                deleteCurrentTime(lastAction.id);
+            }
         }
     });
     chrome.runtime.onMessage.addListener((message: TabMomMessage) => {
-        if (message.type === MessageType.COUNTER) {
-            store.dispatch(setCounter(message.counter));
+        if (message.type === MessageType.TIMER) {
+            store.dispatch(updateCurrent(message.id, message.time));
+            // may need to inactive for one time in the future.
         }
     });
     return (

@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { AppState } from 'components/store';
 import { openModal } from '../edit/actions';
-import { Theme, createStyles, WithStyles, Button, Typography } from '@material-ui/core';
+import { Theme, createStyles, WithStyles, Button } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
 import { Create as CreateIcon } from '@material-ui/icons';
 const styles = (theme: Theme) =>
@@ -13,20 +12,13 @@ const styles = (theme: Theme) =>
         root: {
             display: 'flex',
         },
-        counter: {
-            alignSelf: 'flex-end',
-        },
     });
 
 interface DispatchProps {
     openModal: typeof openModal;
 }
 
-interface StateProps {
-    counter: number;
-}
-
-interface Props extends DispatchProps, StateProps, WithStyles<typeof styles> {}
+interface Props extends DispatchProps, WithStyles<typeof styles> {}
 
 class ControllerInner extends React.Component<Props> {
     private open = () => {
@@ -34,7 +26,7 @@ class ControllerInner extends React.Component<Props> {
     };
 
     public render() {
-        const { classes, counter } = this.props;
+        const { classes } = this.props;
 
         return (
             <div className={classes.root}>
@@ -44,21 +36,14 @@ class ControllerInner extends React.Component<Props> {
                         CREATE
                     </Button>
                 </div>
-                <div className={classes.counter}>
-                    <Typography variant="subtitle1" gutterBottom>
-                        Counter: {counter}
-                    </Typography>
-                </div>
             </div>
         );
     }
 }
 
-const mapStateToProps = (state: AppState) => ({
-    counter: state.controller.counter,
-});
+const mapStateToProps = () => ({});
 
-export const Controller = connect(
+export const Controller = connect<{}, DispatchProps>(
     mapStateToProps,
     { openModal },
 )(withStyles(styles)(ControllerInner));

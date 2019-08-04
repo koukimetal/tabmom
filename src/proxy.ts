@@ -1,7 +1,7 @@
-import { CronRule } from './components/table/actions';
+import { CronRule } from './components/system/actions';
 
 const RULES_KEY = 'rules';
-const COUNTER_KEY = 'counter';
+const CURRNET_PREFIX = 'CURRENT_';
 
 export const saveRules = (rules: CronRule[]) =>
     new Promise(resolve => {
@@ -13,31 +13,42 @@ export const saveRules = (rules: CronRule[]) =>
 export const getRules = () =>
     new Promise<CronRule[]>(resolve => {
         chrome.storage.sync.get([RULES_KEY], values => {
-            resolve(values.rules);
+            resolve(values[RULES_KEY]);
         });
     });
 
-export const setCounter = (counter: number) =>
+export const setCurrentTime = (id: string, time: number) =>
     new Promise(resolve => {
-        chrome.storage.local.set({ [COUNTER_KEY]: counter }, () => {
+        const key = CURRNET_PREFIX + id;
+        chrome.storage.local.set({ [key]: time }, () => {
             resolve();
         });
     });
 
-export const getCounter = () =>
+export const deleteCurrentTime = (id: string) =>
+    new Promise(resolve => {
+        const key = CURRNET_PREFIX + id;
+        chrome.storage.local.remove(key, () => {
+            resolve();
+        });
+    });
+
+export const getCurrentTime = (id: string) =>
     new Promise<number>(resolve => {
-        chrome.storage.local.get([COUNTER_KEY], values => {
-            resolve(values.counter);
+        const key = CURRNET_PREFIX + id;
+        chrome.storage.local.get([key], values => {
+            resolve(values[key]);
         });
     });
 
 export enum MessageType {
-    COUNTER,
+    TIMER,
 }
 
-export interface CounterMessage {
-    type: MessageType.COUNTER;
-    counter: number;
+export interface TimerMessage {
+    type: MessageType.TIMER;
+    id: string;
+    time: number;
 }
 
-export type TabMomMessage = CounterMessage;
+export type TabMomMessage = TimerMessage;
