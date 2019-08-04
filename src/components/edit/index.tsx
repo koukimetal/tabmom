@@ -39,6 +39,9 @@ import * as uuidV1 from 'uuid/v1';
 
 const styles = (theme: Theme) =>
     createStyles({
+        root: {
+            padding: theme.spacing(1),
+        },
         textField: {
             marginLeft: theme.spacing(1),
             marginRight: theme.spacing(1),
@@ -145,7 +148,7 @@ class EditModalInner extends React.Component<Props> {
         return (
             <Modal open={edit.mode !== ModalMode.CLOSED} onClose={this.close}>
                 <>
-                    <Paper>
+                    <Paper className={classes.root}>
                         <form onSubmit={this.save}>
                             <div>
                                 <TextField
