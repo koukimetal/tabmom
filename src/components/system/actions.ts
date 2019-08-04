@@ -11,6 +11,7 @@ export interface CronRule {
     name: string;
     period: number;
     active: boolean;
+    oneTime: boolean;
 }
 
 interface AddRule {

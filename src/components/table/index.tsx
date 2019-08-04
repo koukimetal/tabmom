@@ -76,7 +76,13 @@ class RuleTableInner extends React.Component<Props> {
                         <EditIcon fontSize="inherit" />
                     </IconButton>
                 </TableCell>
-                <TableCell>{rule.active ? remains.toString() + ' / ' + rule.period.toString() : <OffIcon />}</TableCell>
+                <TableCell>
+                    {rule.active ? (
+                        (rule.oneTime ? '*' : '') + remains.toString() + ' / ' + rule.period.toString()
+                    ) : (
+                        <OffIcon />
+                    )}
+                </TableCell>
                 <TableCell component="th" scope="row">
                     <Link
                         component="button"

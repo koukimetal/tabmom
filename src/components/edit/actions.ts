@@ -5,6 +5,7 @@ const UPDATE_CURRENT = '@edit/UPDATE_CURRENT';
 const UPDATE_NAME = '@edit/UPDATE_NAME';
 const UPDATE_PERIOD = '@edit/UPDATE_PERIOD';
 const UPDATE_ACTIVE = '@edit/UPDATE_ACTIVE';
+const UPDATE_ONE_TIME = '@edit/UPDATE_ONE_TIME';
 
 const OPEN_MODAL_CREATE = '@edit/OPEN_MODAL_CREATE';
 const OPEN_MODAL_EDIT = '@edit/OPEN_MODAL_EDIT';
@@ -30,6 +31,11 @@ interface UpdatePeriod {
 interface UpdateActive {
     type: typeof UPDATE_ACTIVE;
     active: boolean;
+}
+
+interface UpdateOneTime {
+    type: typeof UPDATE_ONE_TIME;
+    oneTime: boolean;
 }
 
 interface OpenModalCreate {
@@ -70,6 +76,7 @@ export type EditModalAction =
     | CloseModal
     | UpdateActive
     | UpdateDeleteFlag
+    | UpdateOneTime
     | UpdateCurrent
     | OpenModalEdit;
 
@@ -80,6 +87,7 @@ export interface EditModalState {
     active: boolean;
     mode: ModalMode;
     deleteFlag: boolean;
+    oneTime: boolean;
     targetId?: string;
     current?: string;
 }
@@ -172,6 +180,17 @@ const active = (state = true, action: EditModalAction) => {
     }
 };
 
+const oneTime = (state = false, action: EditModalAction) => {
+    switch (action.type) {
+        case UPDATE_ONE_TIME:
+            return action.oneTime;
+        case OPEN_MODAL_EDIT:
+            return action.rule.oneTime;
+        default:
+            return defaultReducer(state, false, action);
+    }
+};
+
 const current = (state = '', action: EditModalAction) => {
     switch (action.type) {
         case UPDATE_CURRENT:
@@ -237,6 +256,13 @@ export const updateActive = (active: boolean): UpdateActive => {
     };
 };
 
+export const updateOneTime = (oneTime: boolean): UpdateOneTime => {
+    return {
+        type: UPDATE_ONE_TIME,
+        oneTime,
+    };
+};
+
 export const updateDeleteFlag = (flag: boolean): UpdateDeleteFlag => {
     return {
         type: UPDATE_DELETE_FLAG,
@@ -253,4 +279,5 @@ export const editModalReducer = combineReducers<EditModalState, EditModalAction>
     targetId,
     deleteFlag,
     current,
+    oneTime,
 });

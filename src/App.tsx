@@ -13,6 +13,7 @@ import {
     ADD_RULE as SYSTEM_ADD_RULE,
     DELETE_RULE as SYSTEM_DELETE_RULE,
     UPDATE_CURRENT as SYSTEM_UPDATE_CURRENT,
+    updateRule,
 } from './components/system/actions';
 import { saveRules, TabMomMessage, MessageType, setCurrentTime, deleteCurrentTime } from './proxy';
 
@@ -25,6 +26,7 @@ export interface AppProps {
 export const App: React.SFC<AppProps> = props => {
     const store = configureStore(props);
 
+    // To avoid confusion, we shouldn't dispatch here.
     let previousRule = props.rules;
     store.subscribe(() => {
         const { rules } = store.getState().system;
@@ -45,10 +47,18 @@ export const App: React.SFC<AppProps> = props => {
             }
         }
     });
+
+    // To avoid confusion, we shouldn't modify storage here.
     chrome.runtime.onMessage.addListener((message: TabMomMessage) => {
         if (message.type === MessageType.TIMER) {
             store.dispatch(updateCurrent(message.id, message.time));
-            // may need to inactive for one time in the future.
+            if (message.disactivate) {
+                const { rules } = store.getState().system;
+                let rule = rules.find(rule => rule.id === message.id);
+                rule = { ...rule };
+                rule.active = false;
+                store.dispatch(updateRule(rule));
+            }
         }
     });
 

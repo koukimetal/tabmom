@@ -49,6 +49,7 @@ export interface TimerMessage {
     type: MessageType.TIMER;
     id: string;
     time: number;
+    disactivate: boolean;
 }
 
 export type TabMomMessage = TimerMessage;

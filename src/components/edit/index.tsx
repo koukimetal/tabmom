@@ -9,6 +9,7 @@ import {
     updateUrl,
     updateActive,
     ModalMode,
+    updateOneTime,
     updateDeleteFlag,
     updateCurrent as editUpdateCurrent,
 } from './actions';
@@ -65,6 +66,7 @@ interface DispatchProps {
     updateDeleteFlag: typeof updateDeleteFlag;
     systemUpdateCurrent: typeof systemUpdateCurrent;
     editUpdateCurrent: typeof editUpdateCurrent;
+    updateOneTime: typeof updateOneTime;
 }
 
 interface StateProps {
@@ -90,6 +92,9 @@ class EditModalInner extends React.Component<Props> {
     private toggleActive = () => {
         this.props.updateActive(!this.props.edit.active);
     };
+    private toggleOneTime = () => {
+        this.props.updateOneTime(!this.props.edit.oneTime);
+    };
 
     private save = () => {
         const { edit } = this.props;
@@ -103,6 +108,7 @@ class EditModalInner extends React.Component<Props> {
             period: periodNum,
             active: edit.active,
             url: edit.url,
+            oneTime: edit.oneTime,
         };
 
         if (createNew) {
@@ -188,6 +194,16 @@ class EditModalInner extends React.Component<Props> {
                                     }
                                     label="Active"
                                 />
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={edit.oneTime}
+                                            onChange={this.toggleOneTime}
+                                            value={edit.oneTime}
+                                        />
+                                    }
+                                    label="OneTime"
+                                />
                             </FormGroup>
                         </div>
 
@@ -270,5 +286,6 @@ export const EditModal = connect<StateProps, DispatchProps>(
         updateDeleteFlag,
         systemUpdateCurrent,
         editUpdateCurrent,
+        updateOneTime,
     },
 )(withStyles(styles)(EditModalInner));

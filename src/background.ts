@@ -15,14 +15,18 @@ const main = () => {
                         return;
                     }
 
+                    let disactivate = false;
                     if (time <= 1) {
+                        if (rule.oneTime) {
+                            disactivate = true;
+                        }
                         time = rule.period;
                         chrome.tabs.create({ url: rule.url });
                     } else {
                         time--;
                     }
                     await setCurrentTime(rule.id, time);
-                    const message: TimerMessage = { type: MessageType.TIMER, id: rule.id, time };
+                    const message: TimerMessage = { type: MessageType.TIMER, id: rule.id, time, disactivate };
                     chrome.runtime.sendMessage(message);
                 }),
             );
