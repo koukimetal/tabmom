@@ -60,7 +60,7 @@ export interface SystemState {
 const rules = (state: CronRule[] = [], action: SystemAction) => {
     switch (action.type) {
         case ADD_RULE:
-            return [...state, action.rule];
+            return [action.rule, ...state];
         case UPDATE_RULE:
             return state.map(rule => (rule.id === action.rule.id ? action.rule : rule));
         case SWAP_RULE:
