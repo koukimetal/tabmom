@@ -1,6 +1,7 @@
 import { combineReducers } from 'redux';
 export const ADD_RULE = '@system/ADD_RULE';
 const UPDATE_RULE = '@system/UPDATE_RULE';
+const SWAP_RULE = '@system/SWAP_RULE';
 export const DELETE_RULE = '@system/DELETE_RULE';
 const DELETE_CURRENT = '@system/DELETE_CURRENT';
 export const UPDATE_CURRENT = '@system/UPDATE_CURRENT';
@@ -29,6 +30,12 @@ interface DeleteRule {
     id: string;
 }
 
+interface SwapRule {
+    type: typeof SWAP_RULE;
+    a: number;
+    b: number;
+}
+
 interface DeleteCurrent {
     type: typeof DELETE_CURRENT;
     id: string;
@@ -40,7 +47,7 @@ interface UpdateCurrent {
     time: number;
 }
 
-export type SystemAction = AddRule | UpdateRule | DeleteRule | DeleteCurrent | UpdateCurrent;
+export type SystemAction = AddRule | UpdateRule | DeleteRule | DeleteCurrent | UpdateCurrent | SwapRule;
 
 export interface CurrentMap {
     [id: string]: number;
@@ -56,6 +63,12 @@ const rules = (state: CronRule[] = [], action: SystemAction) => {
             return [...state, action.rule];
         case UPDATE_RULE:
             return state.map(rule => (rule.id === action.rule.id ? action.rule : rule));
+        case SWAP_RULE:
+            const next = [...state];
+            const tmp = next[action.a];
+            next[action.a] = next[action.b];
+            next[action.b] = tmp;
+            return next;
         case DELETE_RULE:
             return state.filter(rule => rule.id !== action.id);
         default:
@@ -94,6 +107,14 @@ export const deleteRule = (id: string): DeleteRule => {
     return {
         type: DELETE_RULE,
         id,
+    };
+};
+
+export const swapRule = (a: number, b: number): SwapRule => {
+    return {
+        type: SWAP_RULE,
+        a,
+        b,
     };
 };
 

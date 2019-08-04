@@ -15,9 +15,14 @@ import {
     Link,
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
-import { SystemState, CronRule } from '../system/actions';
+import { SystemState, CronRule, swapRule } from '../system/actions';
 import { editModal } from '../edit/actions';
-import { Edit as EditIcon, HighlightOff as OffIcon } from '@material-ui/icons';
+import {
+    Edit as EditIcon,
+    HighlightOff as OffIcon,
+    ArrowUpward as UpIcon,
+    ArrowDownward as DownIcon,
+} from '@material-ui/icons';
 
 const styles = (theme: Theme) =>
     createStyles({
@@ -28,6 +33,10 @@ const styles = (theme: Theme) =>
         },
         title: {
             padding: theme.spacing(1),
+        },
+        order: {
+            padding: theme.spacing(1),
+            width: 50,
         },
         edit: {
             padding: theme.spacing(1),
@@ -47,6 +56,7 @@ const styles = (theme: Theme) =>
 
 interface DispatchProps {
     editModal: typeof editModal;
+    swapRule: typeof swapRule;
 }
 
 interface StateProps {
@@ -75,7 +85,11 @@ class RuleTableInner extends React.Component<Props> {
         chrome.tabs.create({ url });
     };
 
-    private renderTableRow = (rule: CronRule) => {
+    private swapRule = (a: number, b: number) => {
+        this.props.swapRule(a, b);
+    };
+
+    private renderTableRow = (rule: CronRule, idx: number, ruleSize: number) => {
         const remains = this.getCurrent(rule);
         const { classes } = this.props;
         return (
@@ -102,6 +116,18 @@ class RuleTableInner extends React.Component<Props> {
                         {rule.name}
                     </Link>
                 </TableCell>
+                <TableCell className={classes.cell}>
+                    {idx > 0 && (
+                        <IconButton aria-label="edit" size="small" onClick={() => this.swapRule(idx - 1, idx)}>
+                            <UpIcon fontSize="inherit" />
+                        </IconButton>
+                    )}
+                    {idx < ruleSize - 1 && (
+                        <IconButton aria-label="edit" size="small" onClick={() => this.swapRule(idx, idx + 1)}>
+                            <DownIcon fontSize="inherit" />
+                        </IconButton>
+                    )}
+                </TableCell>
             </TableRow>
         );
     };
@@ -117,9 +143,12 @@ class RuleTableInner extends React.Component<Props> {
                             <TableCell className={classes.edit}>Edit</TableCell>
                             <TableCell className={classes.period}>Rmn / Prd</TableCell>
                             <TableCell className={classes.title}>Title</TableCell>
+                            <TableCell className={classes.order}>Order</TableCell>
                         </TableRow>
                     </TableHead>
-                    <TableBody>{system.rules.map(rule => this.renderTableRow(rule))}</TableBody>
+                    <TableBody>
+                        {system.rules.map((rule, idx) => this.renderTableRow(rule, idx, system.rules.length))}
+                    </TableBody>
                 </Table>
             </Paper>
         );
@@ -132,5 +161,5 @@ const mapStateToProps = (state: AppState): StateProps => ({
 
 export const RuleTable = connect<StateProps, DispatchProps>(
     mapStateToProps,
-    { editModal },
+    { editModal, swapRule },
 )(withStyles(styles)(RuleTableInner));
