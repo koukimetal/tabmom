@@ -1,6 +1,7 @@
 import { CronRule } from './../system/actions';
 import { combineReducers } from 'redux';
 const UPDATE_URL = '@edit/UPDATE_URL';
+const UPDATE_CURRENT = '@edit/UPDATE_CURRENT';
 const UPDATE_NAME = '@edit/UPDATE_NAME';
 const UPDATE_PERIOD = '@edit/UPDATE_PERIOD';
 const UPDATE_ACTIVE = '@edit/UPDATE_ACTIVE';
@@ -11,41 +12,47 @@ const CLOSE_MODAL = '@edit/CLOSE_MODAL';
 
 const UPDATE_DELETE_FLAG = '@edit/UPDATE_DELETE_FLAG';
 
-interface NameAction {
+interface UpdateName {
     type: typeof UPDATE_NAME;
     name: string;
 }
 
-interface UrlAction {
+interface UpdateUrl {
     type: typeof UPDATE_URL;
     url: string;
 }
 
-interface PeriodAction {
+interface UpdatePeriod {
     type: typeof UPDATE_PERIOD;
     period: string;
 }
 
-interface ActiveAction {
+interface UpdateActive {
     type: typeof UPDATE_ACTIVE;
     active: boolean;
 }
 
-interface OpenCreateAction {
+interface OpenModalCreate {
     type: typeof OPEN_MODAL_CREATE;
 }
 
-interface OpenEditAction {
+interface OpenModalEdit {
     type: typeof OPEN_MODAL_EDIT;
     rule: CronRule;
+    current: number;
 }
 
-interface DeleteFlagAction {
+interface UpdateCurrent {
+    type: typeof UPDATE_CURRENT;
+    current: string;
+}
+
+interface UpdateDeleteFlag {
     type: typeof UPDATE_DELETE_FLAG;
     flag: boolean;
 }
 
-interface CloseAction {
+interface CloseModal {
     type: typeof CLOSE_MODAL;
 }
 
@@ -56,14 +63,15 @@ export enum ModalMode {
 }
 
 export type EditModalAction =
-    | NameAction
-    | UrlAction
-    | PeriodAction
-    | OpenCreateAction
-    | CloseAction
-    | ActiveAction
-    | DeleteFlagAction
-    | OpenEditAction;
+    | UpdateName
+    | UpdateUrl
+    | UpdatePeriod
+    | OpenModalCreate
+    | CloseModal
+    | UpdateActive
+    | UpdateDeleteFlag
+    | UpdateCurrent
+    | OpenModalEdit;
 
 export interface EditModalState {
     period: string;
@@ -71,11 +79,12 @@ export interface EditModalState {
     url: string;
     active: boolean;
     mode: ModalMode;
-    targetId: string;
     deleteFlag: boolean;
+    targetId?: string;
+    current?: string;
 }
 
-const modalModeReducer = (state = ModalMode.CLOSED, action: EditModalAction) => {
+const mode = (state = ModalMode.CLOSED, action: EditModalAction) => {
     switch (action.type) {
         case OPEN_MODAL_CREATE:
             return ModalMode.CREATE;
@@ -110,7 +119,7 @@ const defaultReducer = <T>(state: T, initialValue: T, action: EditModalAction) =
     }
 };
 
-const deleteFlagReducer = (state = false, action: EditModalAction) => {
+const deleteFlag = (state = false, action: EditModalAction) => {
     switch (action.type) {
         case UPDATE_DELETE_FLAG:
             return action.flag;
@@ -119,7 +128,7 @@ const deleteFlagReducer = (state = false, action: EditModalAction) => {
     }
 };
 
-const nameReducer = (state = '', action: EditModalAction) => {
+const name = (state = '', action: EditModalAction) => {
     switch (action.type) {
         case UPDATE_NAME:
             return action.name;
@@ -130,7 +139,7 @@ const nameReducer = (state = '', action: EditModalAction) => {
     }
 };
 
-const urlReducer = (state = '', action: EditModalAction) => {
+const url = (state = '', action: EditModalAction) => {
     switch (action.type) {
         case UPDATE_URL:
             return action.url;
@@ -141,7 +150,7 @@ const urlReducer = (state = '', action: EditModalAction) => {
     }
 };
 
-const periodReducer = (state = '', action: EditModalAction) => {
+const period = (state = '', action: EditModalAction) => {
     switch (action.type) {
         case UPDATE_PERIOD:
             return action.period;
@@ -152,7 +161,7 @@ const periodReducer = (state = '', action: EditModalAction) => {
     }
 };
 
-const activeReducer = (state = true, action: EditModalAction) => {
+const active = (state = true, action: EditModalAction) => {
     switch (action.type) {
         case UPDATE_ACTIVE:
             return action.active;
@@ -163,52 +172,72 @@ const activeReducer = (state = true, action: EditModalAction) => {
     }
 };
 
-export const openModal = (): OpenCreateAction => {
+const current = (state = '', action: EditModalAction) => {
+    switch (action.type) {
+        case UPDATE_CURRENT:
+            return action.current;
+        case OPEN_MODAL_EDIT:
+            return action.current.toString();
+        default:
+            return defaultReducer(state, '', action);
+    }
+};
+
+export const openModal = (): OpenModalCreate => {
     return {
         type: OPEN_MODAL_CREATE,
     };
 };
 
-export const editModal = (rule: CronRule): OpenEditAction => {
+export const editModal = (rule: CronRule, current: number): OpenModalEdit => {
     return {
         type: OPEN_MODAL_EDIT,
         rule,
+        current,
     };
 };
 
-export const closeModal = (): CloseAction => {
+export const closeModal = (): CloseModal => {
     return {
         type: CLOSE_MODAL,
     };
 };
 
-export const updateName = (name: string): NameAction => {
+export const updateName = (name: string): UpdateName => {
     return {
         type: UPDATE_NAME,
         name,
     };
 };
-export const updateUrl = (url: string): UrlAction => {
+
+export const updateCurrent = (current: string): UpdateCurrent => {
+    return {
+        type: UPDATE_CURRENT,
+        current,
+    };
+};
+
+export const updateUrl = (url: string): UpdateUrl => {
     return {
         type: UPDATE_URL,
         url,
     };
 };
-export const updatePeriod = (period: string): PeriodAction => {
+export const updatePeriod = (period: string): UpdatePeriod => {
     return {
         type: UPDATE_PERIOD,
         period,
     };
 };
 
-export const updateActive = (active: boolean): ActiveAction => {
+export const updateActive = (active: boolean): UpdateActive => {
     return {
         type: UPDATE_ACTIVE,
         active,
     };
 };
 
-export const updateDeleteFlag = (flag: boolean): DeleteFlagAction => {
+export const updateDeleteFlag = (flag: boolean): UpdateDeleteFlag => {
     return {
         type: UPDATE_DELETE_FLAG,
         flag,
@@ -216,11 +245,12 @@ export const updateDeleteFlag = (flag: boolean): DeleteFlagAction => {
 };
 
 export const editModalReducer = combineReducers<EditModalState, EditModalAction>({
-    name: nameReducer,
-    url: urlReducer,
-    period: periodReducer,
-    mode: modalModeReducer,
-    active: activeReducer,
+    name,
+    url,
+    period,
+    mode,
+    active,
     targetId,
-    deleteFlag: deleteFlagReducer,
+    deleteFlag,
+    current,
 });

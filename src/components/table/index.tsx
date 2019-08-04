@@ -48,10 +48,19 @@ interface StateProps {
 interface Props extends DispatchProps, StateProps, WithStyles<typeof styles> {}
 
 class RuleTableInner extends React.Component<Props> {
+    private getCurrent(rule: CronRule) {
+        const { system } = this.props;
+        if (!system.current[rule.id]) {
+            console.error('Sync error', rule.name);
+        }
+        return system.current[rule.id] ? system.current[rule.id] : rule.period;
+    }
+
     private edit = (id: string) => {
         const { system } = this.props;
         const rule = system.rules.find(rule => rule.id === id);
-        this.props.editModal(rule);
+        const current = this.getCurrent(rule);
+        this.props.editModal(rule, current);
     };
 
     private openLink = (url: string) => {
@@ -59,11 +68,7 @@ class RuleTableInner extends React.Component<Props> {
     };
 
     private renderTableRow = (rule: CronRule) => {
-        const { system } = this.props;
-        if (!system.current[rule.id]) {
-            console.error('Sync error', rule.name);
-        }
-        const remains = system.current[rule.id] ? system.current[rule.id] : rule.period;
+        const remains = this.getCurrent(rule);
         return (
             <TableRow key={rule.id}>
                 <TableCell>

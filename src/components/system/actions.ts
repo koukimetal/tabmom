@@ -3,7 +3,7 @@ export const ADD_RULE = '@system/ADD_RULE';
 const UPDATE_RULE = '@system/UPDATE_RULE';
 export const DELETE_RULE = '@system/DELETE_RULE';
 const DELETE_CURRENT = '@system/DELETE_CURRENT';
-const UPDATE_CURRENT = '@system/UPDATE_CURRENT';
+export const UPDATE_CURRENT = '@system/UPDATE_CURRENT';
 
 export interface CronRule {
     id: string;
@@ -21,7 +21,6 @@ interface AddRule {
 interface UpdateRule {
     type: typeof UPDATE_RULE;
     rule: CronRule;
-    id: string;
 }
 
 interface DeleteRule {
@@ -55,7 +54,7 @@ const rules = (state: CronRule[] = [], action: SystemAction) => {
         case ADD_RULE:
             return [...state, action.rule];
         case UPDATE_RULE:
-            return state.map(rule => (rule.id === action.id ? action.rule : rule));
+            return state.map(rule => (rule.id === action.rule.id ? action.rule : rule));
         case DELETE_RULE:
             return state.filter(rule => rule.id !== action.id);
         default:
@@ -83,10 +82,9 @@ export const addRule = (rule: CronRule): AddRule => {
     };
 };
 
-export const updateRule = (rule: CronRule, id: string): UpdateRule => {
+export const updateRule = (rule: CronRule): UpdateRule => {
     return {
         type: UPDATE_RULE,
-        id,
         rule,
     };
 };

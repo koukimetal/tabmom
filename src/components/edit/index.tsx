@@ -10,6 +10,7 @@ import {
     updateActive,
     ModalMode,
     updateDeleteFlag,
+    updateCurrent as editUpdateCurrent,
 } from './actions';
 import Modal from '@material-ui/core/Modal';
 import {
@@ -24,7 +25,14 @@ import {
     Checkbox,
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
-import { CronRule, addRule, updateRule, deleteRule, updateCurrent } from '../system/actions';
+import {
+    CronRule,
+    addRule,
+    updateRule,
+    deleteRule,
+    deleteCurrent,
+    updateCurrent as systemUpdateCurrent,
+} from '../system/actions';
 import { Save as SaveIcon, Delete as DeleteIcon } from '@material-ui/icons';
 import * as uuidV1 from 'uuid/v1';
 
@@ -53,8 +61,10 @@ interface DispatchProps {
     addRule: typeof addRule;
     updateRule: typeof updateRule;
     deleteRule: typeof deleteRule;
+    deleteCurrent: typeof deleteCurrent;
     updateDeleteFlag: typeof updateDeleteFlag;
-    updateCurrent: typeof updateCurrent;
+    systemUpdateCurrent: typeof systemUpdateCurrent;
+    editUpdateCurrent: typeof editUpdateCurrent;
 }
 
 interface StateProps {
@@ -71,6 +81,9 @@ class EditModalInner extends React.Component<Props> {
     private changePeriod = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.props.updatePeriod(event.currentTarget.value);
     };
+    private changeCurrent = (event: React.ChangeEvent<HTMLInputElement>) => {
+        this.props.editUpdateCurrent(event.currentTarget.value);
+    };
     private changeUrl = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.props.updateUrl(event.currentTarget.value);
     };
@@ -81,7 +94,9 @@ class EditModalInner extends React.Component<Props> {
     private save = () => {
         const { edit } = this.props;
         const periodNum = parseInt(edit.period);
-        const id = uuidV1();
+        const createNew = edit.targetId === null;
+
+        const id = createNew ? uuidV1() : edit.targetId;
         const rule: CronRule = {
             id,
             name: edit.name,
@@ -90,11 +105,13 @@ class EditModalInner extends React.Component<Props> {
             url: edit.url,
         };
 
-        this.props.updateCurrent(id, periodNum);
-        if (edit.targetId) {
-            this.props.updateRule(rule, edit.targetId);
-        } else {
+        if (createNew) {
+            this.props.systemUpdateCurrent(id, periodNum);
             this.props.addRule(rule);
+        } else {
+            const currentNum = parseInt(edit.current);
+            this.props.systemUpdateCurrent(id, currentNum);
+            this.props.updateRule(rule);
         }
         this.props.closeModal();
     };
@@ -102,6 +119,7 @@ class EditModalInner extends React.Component<Props> {
     private delete = () => {
         const { edit } = this.props;
         this.props.deleteRule(edit.targetId);
+        this.props.deleteCurrent(edit.targetId);
         this.props.closeModal();
     };
 
@@ -131,6 +149,15 @@ class EditModalInner extends React.Component<Props> {
                             />
                         </div>
                         <div>
+                            {edit.mode === ModalMode.EDIT && (
+                                <TextField
+                                    label="Current"
+                                    className={classes.textField}
+                                    value={edit.current}
+                                    onChange={this.changeCurrent}
+                                    margin="normal"
+                                />
+                            )}
                             <TextField
                                 label="Period"
                                 className={classes.textField}
@@ -210,8 +237,17 @@ class EditModalInner extends React.Component<Props> {
 }
 
 const validator = (editState: EditModalState) => {
-    const period = parseInt(editState.period);
-    return Number.isInteger(period) && period > 0;
+    // FYI: parseInt("12a") is 12
+    if (editState.mode === ModalMode.CREATE) {
+        const period = parseInt(editState.period);
+        return Number.isInteger(period) && period > 0;
+    } else if (editState.mode === ModalMode.EDIT) {
+        const period = parseInt(editState.period);
+        const current = parseInt(editState.current);
+        return Number.isInteger(period) && period > 0 && Number.isInteger(current) && current > 0;
+    } else {
+        return false;
+    }
 };
 
 const mapStateToProps = (state: AppState) => ({
@@ -230,7 +266,9 @@ export const EditModal = connect<StateProps, DispatchProps>(
         addRule,
         deleteRule,
         updateRule,
+        deleteCurrent,
         updateDeleteFlag,
-        updateCurrent,
+        systemUpdateCurrent,
+        editUpdateCurrent,
     },
 )(withStyles(styles)(EditModalInner));

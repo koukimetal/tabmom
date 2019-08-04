@@ -5,7 +5,7 @@ import { getRules, getCurrentTime } from './proxy';
 import { CurrentMap } from 'components/system/actions';
 
 const main = async () => {
-    const rules = await getRules();
+    const rules = (await getRules()) || [];
     const current: CurrentMap = {};
 
     await Promise.all(

@@ -12,6 +12,7 @@ import {
     updateCurrent,
     ADD_RULE as SYSTEM_ADD_RULE,
     DELETE_RULE as SYSTEM_DELETE_RULE,
+    UPDATE_CURRENT as SYSTEM_UPDATE_CURRENT,
 } from './components/system/actions';
 import { saveRules, TabMomMessage, MessageType, setCurrentTime, deleteCurrentTime } from './proxy';
 
@@ -39,6 +40,8 @@ export const App: React.SFC<AppProps> = props => {
                 setCurrentTime(lastAction.rule.id, lastAction.rule.period);
             } else if (lastAction.type === SYSTEM_DELETE_RULE) {
                 deleteCurrentTime(lastAction.id);
+            } else if (lastAction.type === SYSTEM_UPDATE_CURRENT) {
+                setCurrentTime(lastAction.id, lastAction.time);
             }
         }
     });
@@ -48,6 +51,7 @@ export const App: React.SFC<AppProps> = props => {
             // may need to inactive for one time in the future.
         }
     });
+
     return (
         <ThemeProvider theme={theme}>
             <Provider store={store}>
