@@ -26,14 +26,22 @@ const styles = (theme: Theme) =>
             marginTop: theme.spacing(3),
             overflowX: 'auto',
         },
+        title: {
+            padding: theme.spacing(1),
+        },
         edit: {
+            padding: theme.spacing(1),
             width: 10,
         },
         period: {
-            width: 60,
+            padding: theme.spacing(1),
+            width: 85,
         },
         table: {
             minWidth: 600,
+        },
+        cell: {
+            padding: theme.spacing(1),
         },
     });
 
@@ -69,21 +77,22 @@ class RuleTableInner extends React.Component<Props> {
 
     private renderTableRow = (rule: CronRule) => {
         const remains = this.getCurrent(rule);
+        const { classes } = this.props;
         return (
             <TableRow key={rule.id}>
-                <TableCell>
+                <TableCell className={classes.cell}>
                     <IconButton aria-label="edit" size="small" onClick={() => this.edit(rule.id)}>
                         <EditIcon fontSize="inherit" />
                     </IconButton>
                 </TableCell>
-                <TableCell>
+                <TableCell className={classes.cell}>
                     {rule.active ? (
                         (rule.oneTime ? '*' : '') + remains.toString() + ' / ' + rule.period.toString()
                     ) : (
                         <OffIcon />
                     )}
                 </TableCell>
-                <TableCell component="th" scope="row">
+                <TableCell component="th" scope="row" className={classes.cell}>
                     <Link
                         component="button"
                         onClick={() => {
@@ -107,7 +116,7 @@ class RuleTableInner extends React.Component<Props> {
                         <TableRow>
                             <TableCell className={classes.edit}>Edit</TableCell>
                             <TableCell className={classes.period}>Rmn / Prd</TableCell>
-                            <TableCell>Title</TableCell>
+                            <TableCell className={classes.title}>Title</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>{system.rules.map(rule => this.renderTableRow(rule))}</TableBody>

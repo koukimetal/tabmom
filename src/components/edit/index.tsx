@@ -96,7 +96,9 @@ class EditModalInner extends React.Component<Props> {
         this.props.updateOneTime(!this.props.edit.oneTime);
     };
 
-    private save = () => {
+    private save = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
         const { edit } = this.props;
         const periodNum = parseInt(edit.period);
         const createNew = edit.targetId === null;
@@ -224,6 +226,7 @@ class EditModalInner extends React.Component<Props> {
                                         <Button
                                             variant="contained"
                                             color="secondary"
+                                            type="button"
                                             className={classes.button}
                                             onClick={this.delete}
                                             disabled={!edit.deleteFlag}
