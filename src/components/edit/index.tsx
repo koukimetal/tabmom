@@ -144,107 +144,109 @@ class EditModalInner extends React.Component<Props> {
             <Modal open={edit.mode !== ModalMode.CLOSED} onClose={this.close}>
                 <>
                     <Paper>
-                        <div>
-                            <TextField
-                                label="Name"
-                                className={classes.fullTextField}
-                                value={edit.name}
-                                onChange={this.changeName}
-                                margin="normal"
-                                fullWidth
-                            />
-                        </div>
-                        <div>
-                            {edit.mode === ModalMode.EDIT && (
+                        <form onSubmit={this.save}>
+                            <div>
                                 <TextField
-                                    label="Current"
+                                    label="Name"
+                                    className={classes.fullTextField}
+                                    value={edit.name}
+                                    onChange={this.changeName}
+                                    margin="normal"
+                                    fullWidth
+                                />
+                            </div>
+                            <div>
+                                {edit.mode === ModalMode.EDIT && (
+                                    <TextField
+                                        label="Current"
+                                        className={classes.textField}
+                                        value={edit.current}
+                                        onChange={this.changeCurrent}
+                                        margin="normal"
+                                    />
+                                )}
+                                <TextField
+                                    label="Period"
                                     className={classes.textField}
-                                    value={edit.current}
-                                    onChange={this.changeCurrent}
+                                    value={edit.period}
+                                    onChange={this.changePeriod}
                                     margin="normal"
                                 />
-                            )}
-                            <TextField
-                                label="Period"
-                                className={classes.textField}
-                                value={edit.period}
-                                onChange={this.changePeriod}
-                                margin="normal"
-                            />
-                        </div>
-                        <div>
-                            <TextField
-                                label="URL"
-                                className={classes.fullTextField}
-                                value={edit.url}
-                                onChange={this.changeUrl}
-                                margin="normal"
-                                fullWidth
-                            />
-                        </div>
-                        <div>
-                            <FormGroup row>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={edit.active}
-                                            onChange={this.toggleActive}
-                                            value={edit.active}
-                                        />
-                                    }
-                                    label="Active"
+                            </div>
+                            <div>
+                                <TextField
+                                    label="URL"
+                                    className={classes.fullTextField}
+                                    value={edit.url}
+                                    onChange={this.changeUrl}
+                                    margin="normal"
+                                    fullWidth
                                 />
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={edit.oneTime}
-                                            onChange={this.toggleOneTime}
-                                            value={edit.oneTime}
-                                        />
-                                    }
-                                    label="OneTime"
-                                />
-                            </FormGroup>
-                        </div>
-
-                        <div>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                className={classes.button}
-                                onClick={this.save}
-                                disabled={!validInput}
-                            >
-                                <SaveIcon />
-                                Save
-                            </Button>
-                            {edit.mode === ModalMode.EDIT && (
-                                <>
-                                    <Button
-                                        variant="contained"
-                                        color="secondary"
-                                        className={classes.button}
-                                        onClick={this.delete}
-                                        disabled={!edit.deleteFlag}
-                                    >
-                                        <DeleteIcon />
-                                        Delete
-                                    </Button>
+                            </div>
+                            <div>
+                                <FormGroup row>
                                     <FormControlLabel
                                         control={
                                             <Checkbox
-                                                checked={edit.deleteFlag}
-                                                onChange={this.toggleDeleteFlag}
-                                                value={edit.deleteFlag}
-                                                icon={<DeleteIcon />}
-                                                checkedIcon={<DeleteIcon color="secondary" />}
+                                                checked={edit.active}
+                                                onChange={this.toggleActive}
+                                                value={edit.active}
                                             />
                                         }
-                                        label=""
+                                        label="Active"
                                     />
-                                </>
-                            )}
-                        </div>
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={edit.oneTime}
+                                                onChange={this.toggleOneTime}
+                                                value={edit.oneTime}
+                                            />
+                                        }
+                                        label="OneTime"
+                                    />
+                                </FormGroup>
+                            </div>
+
+                            <div>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    className={classes.button}
+                                    type="submit"
+                                    disabled={!validInput}
+                                >
+                                    <SaveIcon />
+                                    Save
+                                </Button>
+                                {edit.mode === ModalMode.EDIT && (
+                                    <>
+                                        <Button
+                                            variant="contained"
+                                            color="secondary"
+                                            className={classes.button}
+                                            onClick={this.delete}
+                                            disabled={!edit.deleteFlag}
+                                        >
+                                            <DeleteIcon />
+                                            Delete
+                                        </Button>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={edit.deleteFlag}
+                                                    onChange={this.toggleDeleteFlag}
+                                                    value={edit.deleteFlag}
+                                                    icon={<DeleteIcon />}
+                                                    checkedIcon={<DeleteIcon color="secondary" />}
+                                                />
+                                            }
+                                            label=""
+                                        />
+                                    </>
+                                )}
+                            </div>
+                        </form>
                     </Paper>
                 </>
             </Modal>
