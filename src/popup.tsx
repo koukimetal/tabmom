@@ -1,20 +1,28 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { App } from './App';
-import { getRules, getCurrentTime } from './proxy';
-import { CurrentMap } from 'components/system/actions';
+import { getRule, getCurrentTime, getRuleOrder } from './proxy';
+import { CurrentMap, RuleMap } from 'components/system/actions';
 
 const main = async () => {
-    const rules = (await getRules()) || [];
+    const ruleOrder = (await getRuleOrder()) || [];
+
+    const rules: RuleMap = {};
+
+    await Promise.all(
+        ruleOrder.map(async id => {
+            rules[id] = await getRule(id);
+        }),
+    );
     const current: CurrentMap = {};
 
     await Promise.all(
-        rules.map(async rule => {
-            const time = await getCurrentTime(rule.id);
-            current[rule.id] = time;
+        ruleOrder.map(async id => {
+            const time = await getCurrentTime(id);
+            current[id] = time;
         }),
     );
-    ReactDOM.render(<App rules={rules} current={current} />, document.getElementById('main'));
+    ReactDOM.render(<App ruleOrder={ruleOrder} current={current} rules={rules} />, document.getElementById('main'));
 };
 
 (async () => {

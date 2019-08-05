@@ -7,44 +7,53 @@ import { createMuiTheme } from '@material-ui/core';
 import { ThemeProvider } from '@material-ui/styles';
 import { RuleTable } from './components/table';
 import {
-    CronRule,
-    CurrentMap,
     updateCurrent,
     ADD_RULE as SYSTEM_ADD_RULE,
     DELETE_RULE as SYSTEM_DELETE_RULE,
     UPDATE_CURRENT as SYSTEM_UPDATE_CURRENT,
+    SWAP_RULE as SYSTEM_SWAP_RULE,
+    UPDATE_RULE as SYSTEM_UPDATE_RULE,
     updateRule,
+    SystemState,
 } from './components/system/actions';
-import { saveRules, TabMomMessage, MessageType, setCurrentTime, deleteCurrentTime } from './proxy';
+import {
+    setRule,
+    TabMomMessage,
+    MessageType,
+    setCurrentTime,
+    deleteCurrentTime,
+    setRuleOrder,
+    deleteRule,
+} from './proxy';
 
 const theme = createMuiTheme({});
-export interface AppProps {
-    rules: CronRule[];
-    current: CurrentMap;
-}
+export type AppProps = SystemState;
 
 export const App: React.SFC<AppProps> = props => {
     const store = configureStore(props);
 
     // To avoid confusion, we shouldn't dispatch here.
-    let previousRule = props.rules;
     store.subscribe(() => {
-        const { rules } = store.getState().system;
-        if (previousRule !== rules) {
-            saveRules(rules);
-            previousRule = rules;
-        }
-
         const { lastAction } = store.getState();
 
-        if (lastAction) {
-            if (lastAction.type === SYSTEM_ADD_RULE) {
-                setCurrentTime(lastAction.rule.id, lastAction.rule.period);
-            } else if (lastAction.type === SYSTEM_DELETE_RULE) {
-                deleteCurrentTime(lastAction.id);
-            } else if (lastAction.type === SYSTEM_UPDATE_CURRENT) {
-                setCurrentTime(lastAction.id, lastAction.time);
-            }
+        if (!lastAction) {
+            return;
+        }
+
+        if (lastAction.type === SYSTEM_ADD_RULE) {
+            setRuleOrder(store.getState().system.ruleOrder);
+            setRule(lastAction.rule);
+            setCurrentTime(lastAction.rule.id, lastAction.rule.period);
+        } else if (lastAction.type === SYSTEM_UPDATE_RULE) {
+            setRule(lastAction.rule);
+        } else if (lastAction.type === SYSTEM_DELETE_RULE) {
+            setRuleOrder(store.getState().system.ruleOrder);
+            deleteRule(lastAction.id);
+            deleteCurrentTime(lastAction.id);
+        } else if (lastAction.type === SYSTEM_SWAP_RULE) {
+            setRuleOrder(store.getState().system.ruleOrder);
+        } else if (lastAction.type === SYSTEM_UPDATE_CURRENT) {
+            setCurrentTime(lastAction.id, lastAction.time);
         }
     });
 
@@ -52,13 +61,8 @@ export const App: React.SFC<AppProps> = props => {
     chrome.runtime.onMessage.addListener((message: TabMomMessage) => {
         if (message.type === MessageType.TIMER) {
             store.dispatch(updateCurrent(message.id, message.time));
-            if (message.disactivate) {
-                const { rules } = store.getState().system;
-                let rule = rules.find(rule => rule.id === message.id);
-                rule = { ...rule };
-                rule.active = false;
-                store.dispatch(updateRule(rule));
-            }
+        } else if (message.type === MessageType.UPDATE_RULE) {
+            store.dispatch(updateRule(message.rule));
         }
     });
 

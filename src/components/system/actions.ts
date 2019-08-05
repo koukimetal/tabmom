@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux';
 export const ADD_RULE = '@system/ADD_RULE';
-const UPDATE_RULE = '@system/UPDATE_RULE';
-const SWAP_RULE = '@system/SWAP_RULE';
+export const UPDATE_RULE = '@system/UPDATE_RULE';
+export const SWAP_RULE = '@system/SWAP_RULE';
 export const DELETE_RULE = '@system/DELETE_RULE';
 const DELETE_CURRENT = '@system/DELETE_CURRENT';
 export const UPDATE_CURRENT = '@system/UPDATE_CURRENT';
@@ -52,25 +52,44 @@ export type SystemAction = AddRule | UpdateRule | DeleteRule | DeleteCurrent | U
 export interface CurrentMap {
     [id: string]: number;
 }
+
+export interface RuleMap {
+    [id: string]: CronRule;
+}
+
 export interface SystemState {
-    rules: CronRule[];
+    rules: RuleMap;
+    ruleOrder: string[];
     current: CurrentMap;
 }
 
-const rules = (state: CronRule[] = [], action: SystemAction) => {
+const ruleOrder = (state: string[] = [], action: SystemAction) => {
     switch (action.type) {
         case ADD_RULE:
-            return [action.rule, ...state];
-        case UPDATE_RULE:
-            return state.map(rule => (rule.id === action.rule.id ? action.rule : rule));
+            return [action.rule.id, ...state];
+        case DELETE_RULE:
+            return state.filter(id => id !== action.id);
         case SWAP_RULE:
             const next = [...state];
             const tmp = next[action.a];
             next[action.a] = next[action.b];
             next[action.b] = tmp;
             return next;
+        default:
+            return state;
+    }
+};
+
+const rules = (state: RuleMap = {}, action: SystemAction) => {
+    switch (action.type) {
+        case ADD_RULE:
+            return { ...state, [action.rule.id]: action.rule };
+        case UPDATE_RULE:
+            return Object.assign({}, state, { [action.rule.id]: action.rule });
         case DELETE_RULE:
-            return state.filter(rule => rule.id !== action.id);
+            const next = { ...state };
+            delete next[action.id];
+            return next;
         default:
             return state;
     }
@@ -136,4 +155,5 @@ export const updateCurrent = (id: string, time: number): UpdateCurrent => {
 export const systemReducer = combineReducers<SystemState, SystemAction>({
     rules,
     current,
+    ruleOrder,
 });

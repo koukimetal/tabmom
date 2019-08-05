@@ -27,10 +27,7 @@ export const configureStore = (appProps: AppProps) => {
     const store = createStore(
         rootReducer,
         {
-            system: {
-                rules: appProps.rules,
-                current: appProps.current,
-            },
+            system: appProps,
         },
         composeWithDevTools(middleWareEnhancer),
     );

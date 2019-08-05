@@ -1,34 +1,51 @@
 import { CronRule } from './components/system/actions';
 
-const RULES_KEY = 'rules';
+const RULE_ORDER_KEY = 'rule_order';
+const RULE_PREFIX = 'RULE_';
 const CURRNET_PREFIX = 'CURRENT_';
 
-export const saveRules = (rules: CronRule[]) =>
+export const setRule = (rule: CronRule) =>
     new Promise(resolve => {
-        chrome.storage.sync.set({ [RULES_KEY]: rules }, () => {
+        const key = RULE_PREFIX + rule.id;
+        chrome.storage.sync.set({ [key]: rule }, () => {
             resolve();
         });
     });
 
-export const getRules = () =>
-    new Promise<CronRule[]>(resolve => {
-        chrome.storage.sync.get([RULES_KEY], values => {
-            resolve(values[RULES_KEY]);
+export const getRule = (id: string) =>
+    new Promise<CronRule>(resolve => {
+        const key = RULE_PREFIX + id;
+        chrome.storage.sync.get([key], values => {
+            resolve(values[key]);
+        });
+    });
+
+export const deleteRule = (id: string) =>
+    new Promise<void>(resolve => {
+        const key = RULE_PREFIX + id;
+        chrome.storage.sync.remove([key], () => {
+            resolve();
+        });
+    });
+
+export const setRuleOrder = (ruleOrder: string[]) =>
+    new Promise(resolve => {
+        chrome.storage.sync.set({ [RULE_ORDER_KEY]: ruleOrder }, () => {
+            resolve();
+        });
+    });
+
+export const getRuleOrder = () =>
+    new Promise<string[]>(resolve => {
+        chrome.storage.sync.get([RULE_ORDER_KEY], values => {
+            resolve(values[RULE_ORDER_KEY]);
         });
     });
 
 export const setCurrentTime = (id: string, time: number) =>
-    new Promise(resolve => {
+    new Promise<void>(resolve => {
         const key = CURRNET_PREFIX + id;
         chrome.storage.local.set({ [key]: time }, () => {
-            resolve();
-        });
-    });
-
-export const deleteCurrentTime = (id: string) =>
-    new Promise(resolve => {
-        const key = CURRNET_PREFIX + id;
-        chrome.storage.local.remove(key, () => {
             resolve();
         });
     });
@@ -41,15 +58,28 @@ export const getCurrentTime = (id: string) =>
         });
     });
 
+export const deleteCurrentTime = (id: string) =>
+    new Promise<void>(resolve => {
+        const key = CURRNET_PREFIX + id;
+        chrome.storage.local.remove(key, () => {
+            resolve();
+        });
+    });
+
 export enum MessageType {
     TIMER,
+    UPDATE_RULE,
 }
 
 export interface TimerMessage {
     type: MessageType.TIMER;
     id: string;
     time: number;
-    disactivate: boolean;
 }
 
-export type TabMomMessage = TimerMessage;
+export interface UpdateRuleMessage {
+    type: MessageType.UPDATE_RULE;
+    rule: CronRule;
+}
+
+export type TabMomMessage = TimerMessage | UpdateRuleMessage;

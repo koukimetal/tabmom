@@ -74,9 +74,9 @@ class RuleTableInner extends React.Component<Props> {
         return system.current[rule.id] ? system.current[rule.id] : rule.period;
     }
 
-    private edit = (id: string) => {
+    private clickEdit = (id: string) => {
         const { system } = this.props;
-        const rule = system.rules.find(rule => rule.id === id);
+        const rule = system.rules[id];
         const current = this.getCurrent(rule);
         this.props.editModal(rule, current);
     };
@@ -95,7 +95,7 @@ class RuleTableInner extends React.Component<Props> {
         return (
             <TableRow key={rule.id}>
                 <TableCell className={classes.cell}>
-                    <IconButton aria-label="edit" size="small" onClick={() => this.edit(rule.id)}>
+                    <IconButton aria-label="edit" size="small" onClick={() => this.clickEdit(rule.id)}>
                         <EditIcon fontSize="inherit" />
                     </IconButton>
                 </TableCell>
@@ -147,7 +147,9 @@ class RuleTableInner extends React.Component<Props> {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {system.rules.map((rule, idx) => this.renderTableRow(rule, idx, system.rules.length))}
+                        {system.ruleOrder.map((id, idx) =>
+                            this.renderTableRow(system.rules[id], idx, system.ruleOrder.length),
+                        )}
                     </TableBody>
                 </Table>
             </Paper>

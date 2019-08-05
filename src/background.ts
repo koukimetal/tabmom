@@ -1,24 +1,36 @@
-import { getRules, TimerMessage, MessageType, getCurrentTime, setCurrentTime } from './proxy';
+import {
+    getRule,
+    TimerMessage,
+    MessageType,
+    getCurrentTime,
+    setCurrentTime,
+    getRuleOrder,
+    UpdateRuleMessage,
+    setRule,
+} from './proxy';
 const main = () => {
     chrome.alarms.create('MINUTE', { periodInMinutes: 1 });
     chrome.alarms.onAlarm.addListener(async alarm => {
         if (alarm.name === 'MINUTE') {
-            const rules = await getRules();
+            const ruleOrder = (await getRuleOrder()) || [];
             await Promise.all(
-                rules.map(async rule => {
-                    let time = await getCurrentTime(rule.id);
-                    if (!time) {
-                        time = rule.period;
-                    }
+                ruleOrder.map(async id => {
+                    const rule = await getRule(id);
 
                     if (!rule.active) {
                         return;
                     }
 
-                    let disactivate = false;
+                    let time = (await getCurrentTime(rule.id)) || rule.period;
                     if (time <= 1) {
                         if (rule.oneTime) {
-                            disactivate = true;
+                            const nextRule = Object.assign({}, rule, { active: false });
+                            const message: UpdateRuleMessage = {
+                                type: MessageType.UPDATE_RULE,
+                                rule: nextRule,
+                            };
+                            await setRule(nextRule);
+                            chrome.runtime.sendMessage(message);
                         }
                         time = rule.period;
                         chrome.tabs.create({ url: rule.url });
@@ -26,7 +38,7 @@ const main = () => {
                         time--;
                     }
                     await setCurrentTime(rule.id, time);
-                    const message: TimerMessage = { type: MessageType.TIMER, id: rule.id, time, disactivate };
+                    const message: TimerMessage = { type: MessageType.TIMER, id: rule.id, time };
                     chrome.runtime.sendMessage(message);
                 }),
             );
