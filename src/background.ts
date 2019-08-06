@@ -1,3 +1,4 @@
+import { CronRule } from './components/system/actions';
 import { getNowNumber } from './shared';
 import {
     getRule,
@@ -8,13 +9,34 @@ import {
     getRuleOrder,
     UpdateRuleMessage,
     setRule,
+    getAllTabs,
 } from './proxy';
 const main = () => {
     chrome.alarms.create('MINUTE', { periodInMinutes: 1 });
     chrome.alarms.onAlarm.addListener(async alarm => {
         if (alarm.name === 'MINUTE') {
             const nowNumber = getNowNumber();
+            const allTabs = await getAllTabs();
             const ruleOrder = (await getRuleOrder()) || [];
+
+            const shouldOpen = (rule: CronRule) => {
+                if (nowNumber < rule.startTime || rule.endTime < nowNumber) {
+                    return false;
+                }
+
+                const { skipInfo } = rule;
+
+                if (skipInfo) {
+                    const hitTab = allTabs
+                        .filter(tab => !(skipInfo.ignorePinned && tab.pinned))
+                        .find(tab => tab.url.includes(skipInfo.match));
+                    if (hitTab) {
+                        return false;
+                    }
+                }
+                return true;
+            };
+
             await Promise.all(
                 ruleOrder.map(async id => {
                     const rule = await getRule(id);
@@ -35,7 +57,7 @@ const main = () => {
                             chrome.runtime.sendMessage(message);
                         }
                         time = rule.period;
-                        if (rule.startTime <= nowNumber && nowNumber <= rule.endTime) {
+                        if (shouldOpen(rule)) {
                             chrome.tabs.create({ url: rule.url });
                         }
                     } else {

@@ -4,6 +4,11 @@ const RULE_ORDER_KEY = 'rule_order';
 const RULE_PREFIX = 'RULE_';
 const CURRNET_PREFIX = 'CURRENT_';
 
+export interface TabInfo {
+    url: string;
+    pinned: boolean;
+}
+
 export const setRule = (rule: CronRule) =>
     new Promise(resolve => {
         const key = RULE_PREFIX + rule.id;
@@ -63,6 +68,17 @@ export const deleteCurrentTime = (id: string) =>
         const key = CURRNET_PREFIX + id;
         chrome.storage.local.remove(key, () => {
             resolve();
+        });
+    });
+
+export const getAllTabs = () =>
+    new Promise<TabInfo[]>(resolve => {
+        chrome.tabs.query({}, tabs => {
+            const tabArray: TabInfo[] = tabs.map(({ url, pinned }) => ({
+                url,
+                pinned,
+            }));
+            resolve(tabArray);
         });
     });
 

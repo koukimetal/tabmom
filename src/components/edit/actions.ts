@@ -1,5 +1,5 @@
 import { EditModalAction } from './actions';
-import { CronRule } from './../system/actions';
+import { CronRule, SkipInfo } from './../system/actions';
 import { combineReducers } from 'redux';
 const UPDATE_URL = '@edit/UPDATE_URL';
 const UPDATE_CURRENT = '@edit/UPDATE_CURRENT';
@@ -9,12 +9,30 @@ const UPDATE_ACTIVE = '@edit/UPDATE_ACTIVE';
 const UPDATE_ONE_TIME = '@edit/UPDATE_ONE_TIME';
 const UPDATE_START_TIME = '@edit/UPDATE_START_TIME';
 const UPDATE_END_TIME = '@edit/UPDATE_END_TIME';
+const UPDATE_IS_SKIP_INFO_ACTIVE = '@edit/UPDATE_IS_SKIP_INFO_ACTIVE';
+const UPDATE_SKIP_INFO_IGNORE_PINNED = '@edit/UPDATE_SKIP_INFO_IGNORE_PINNED';
+const UPDATE_SKIP_INFO_MATCH = '@edit/UPDATE_SKIP_INFO_MATCH';
 
 const OPEN_MODAL_CREATE = '@edit/OPEN_MODAL_CREATE';
 const OPEN_MODAL_EDIT = '@edit/OPEN_MODAL_EDIT';
 const CLOSE_MODAL = '@edit/CLOSE_MODAL';
 
 const UPDATE_DELETE_FLAG = '@edit/UPDATE_DELETE_FLAG';
+
+interface UpdateIsSkipInfoActive {
+    type: typeof UPDATE_IS_SKIP_INFO_ACTIVE;
+    isSkipInfoActive: boolean;
+}
+
+interface UpdateSkipInfoIgnorePinned {
+    type: typeof UPDATE_SKIP_INFO_IGNORE_PINNED;
+    ignorePinned: boolean;
+}
+
+interface UpdateSkipInfoMatch {
+    type: typeof UPDATE_SKIP_INFO_MATCH;
+    match: string;
+}
 
 interface UpdateName {
     type: typeof UPDATE_NAME;
@@ -93,6 +111,9 @@ export type EditModalAction =
     | UpdateStartTime
     | UpdateEndTime
     | UpdateCurrent
+    | UpdateIsSkipInfoActive
+    | UpdateSkipInfoIgnorePinned
+    | UpdateSkipInfoMatch
     | OpenModalEdit;
 
 export interface EditModalState {
@@ -105,9 +126,70 @@ export interface EditModalState {
     oneTime: boolean;
     startTime: string;
     endTime: string;
+    isSkipInfoActive: boolean;
+    skipInfo: SkipInfo;
     targetId?: string;
     current?: string;
 }
+
+const defaultReducer = <T>(state: T, initialValue: T, action: EditModalAction) => {
+    switch (action.type) {
+        case CLOSE_MODAL:
+            return initialValue;
+        default:
+            return state;
+    }
+};
+
+const skipInfoIgnorePinned = (state = false, action: EditModalAction) => {
+    switch (action.type) {
+        case OPEN_MODAL_CREATE:
+            return false;
+        case OPEN_MODAL_EDIT:
+            if (!action.rule.skipInfo) {
+                return false;
+            }
+            return action.rule.skipInfo.ignorePinned;
+        case UPDATE_SKIP_INFO_IGNORE_PINNED:
+            return action.ignorePinned;
+        default:
+            return defaultReducer(state, false, action);
+    }
+};
+
+const skipInfoMatch = (state = '', action: EditModalAction) => {
+    switch (action.type) {
+        case OPEN_MODAL_CREATE:
+            return '';
+        case OPEN_MODAL_EDIT:
+            if (!action.rule.skipInfo) {
+                return '';
+            }
+            return action.rule.skipInfo.match;
+        case UPDATE_SKIP_INFO_MATCH:
+            return action.match;
+        default:
+            return defaultReducer(state, '', action);
+    }
+};
+
+const skipInfo = combineReducers<SkipInfo, EditModalAction>({
+    ignorePinned: skipInfoIgnorePinned,
+    match: skipInfoMatch,
+});
+
+const isSkipInfoActive = (state = false, action: EditModalAction) => {
+    switch (action.type) {
+        case UPDATE_IS_SKIP_INFO_ACTIVE:
+            return action.isSkipInfoActive;
+        case OPEN_MODAL_CREATE:
+            return false;
+        case OPEN_MODAL_EDIT:
+            return !!action.rule.skipInfo;
+        default:
+            return defaultReducer(state, false, action);
+    }
+};
 
 const mode = (state = ModalMode.CLOSED, action: EditModalAction) => {
     switch (action.type) {
@@ -115,10 +197,8 @@ const mode = (state = ModalMode.CLOSED, action: EditModalAction) => {
             return ModalMode.CREATE;
         case OPEN_MODAL_EDIT:
             return ModalMode.EDIT;
-        case CLOSE_MODAL:
-            return ModalMode.CLOSED;
         default:
-            return state;
+            return defaultReducer(state, ModalMode.CLOSED, action);
     }
 };
 
@@ -128,19 +208,8 @@ const targetId = (state: string = null, action: EditModalAction) => {
             return null;
         case OPEN_MODAL_EDIT:
             return action.rule.id;
-        case CLOSE_MODAL:
-            return null;
         default:
-            return state;
-    }
-};
-
-const defaultReducer = <T>(state: T, initialValue: T, action: EditModalAction) => {
-    switch (action.type) {
-        case CLOSE_MODAL:
-            return initialValue;
-        default:
-            return state;
+            return defaultReducer(state, null, action);
     }
 };
 
@@ -337,6 +406,27 @@ export const updateDeleteFlag = (flag: boolean): UpdateDeleteFlag => {
     };
 };
 
+export const updateIsSkipInfoActive = (isSkipInfoActive: boolean): UpdateIsSkipInfoActive => {
+    return {
+        type: UPDATE_IS_SKIP_INFO_ACTIVE,
+        isSkipInfoActive,
+    };
+};
+
+export const updateSkipInfoIgnorePinned = (ignorePinned: boolean): UpdateSkipInfoIgnorePinned => {
+    return {
+        type: UPDATE_SKIP_INFO_IGNORE_PINNED,
+        ignorePinned,
+    };
+};
+
+export const updateSkipInfoMatch = (match: string): UpdateSkipInfoMatch => {
+    return {
+        type: UPDATE_SKIP_INFO_MATCH,
+        match,
+    };
+};
+
 export const editModalReducer = combineReducers<EditModalState, EditModalAction>({
     name,
     url,
@@ -349,4 +439,6 @@ export const editModalReducer = combineReducers<EditModalState, EditModalAction>
     endTime,
     current,
     oneTime,
+    skipInfo,
+    isSkipInfoActive,
 });

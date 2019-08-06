@@ -13,6 +13,9 @@ import {
     updateDeleteFlag,
     updateStartTime,
     updateEndTime,
+    updateIsSkipInfoActive,
+    updateSkipInfoIgnorePinned,
+    updateSkipInfoMatch,
     updateCurrent as editUpdateCurrent,
 } from './actions';
 import Modal from '@material-ui/core/Modal';
@@ -74,6 +77,9 @@ interface DispatchProps {
     updateOneTime: typeof updateOneTime;
     updateStartTime: typeof updateStartTime;
     updateEndTime: typeof updateEndTime;
+    updateIsSkipInfoActive: typeof updateIsSkipInfoActive;
+    updateSkipInfoIgnorePinned: typeof updateSkipInfoIgnorePinned;
+    updateSkipInfoMatch: typeof updateSkipInfoMatch;
 }
 
 interface StateProps {
@@ -151,6 +157,10 @@ class EditModalInner extends React.Component<Props> {
             endTime,
         };
 
+        if (edit.isSkipInfoActive) {
+            rule.skipInfo = { ...edit.skipInfo };
+        }
+
         if (createNew) {
             this.props.systemUpdateCurrent(id, periodNum);
             this.props.addRule(rule);
@@ -176,6 +186,20 @@ class EditModalInner extends React.Component<Props> {
     private toggleDeleteFlag = () => {
         const { edit } = this.props;
         this.props.updateDeleteFlag(!edit.deleteFlag);
+    };
+
+    private toggleIsSkipInfoActive = () => {
+        const { edit } = this.props;
+        this.props.updateIsSkipInfoActive(!edit.isSkipInfoActive);
+    };
+
+    private toggleIgnorePinned = () => {
+        const { edit } = this.props;
+        this.props.updateSkipInfoIgnorePinned(!edit.skipInfo.ignorePinned);
+    };
+
+    private changeSkipInfoMatch = (event: React.ChangeEvent<HTMLInputElement>) => {
+        this.props.updateSkipInfoMatch(event.currentTarget.value);
     };
 
     public render() {
@@ -265,6 +289,45 @@ class EditModalInner extends React.Component<Props> {
                                     />
                                 </FormGroup>
                             </div>
+                            <div>
+                                <FormGroup row>
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={edit.isSkipInfoActive}
+                                                onChange={this.toggleIsSkipInfoActive}
+                                                value={edit.isSkipInfoActive}
+                                            />
+                                        }
+                                        label="UseSkipInfo"
+                                    />
+                                    {edit.isSkipInfoActive && (
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={edit.skipInfo.ignorePinned}
+                                                    onChange={this.toggleIgnorePinned}
+                                                    value={edit.skipInfo.ignorePinned}
+                                                />
+                                            }
+                                            label="Ignore pinned tabs"
+                                        />
+                                    )}
+                                </FormGroup>
+                            </div>
+
+                            {edit.isSkipInfoActive && (
+                                <div>
+                                    <TextField
+                                        label="Skip openning if there is a tab whose URL includes this"
+                                        className={classes.fullTextField}
+                                        value={edit.skipInfo.match}
+                                        onChange={this.changeSkipInfoMatch}
+                                        margin="normal"
+                                        fullWidth
+                                    />
+                                </div>
+                            )}
 
                             <div>
                                 <Button
@@ -353,5 +416,8 @@ export const EditModal = connect<StateProps, DispatchProps>(
         updateEndTime,
         editUpdateCurrent,
         updateOneTime,
+        updateIsSkipInfoActive,
+        updateSkipInfoIgnorePinned,
+        updateSkipInfoMatch,
     },
 )(withStyles(styles)(EditModalInner));

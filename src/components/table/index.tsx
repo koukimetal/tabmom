@@ -90,7 +90,6 @@ class RuleTableInner extends React.Component<Props> {
         this.props.swapRule(a, b);
     };
 
-
     private renderTableRow = (rule: CronRule, idx: number, ruleSize: number, nowNumber: number) => {
         const remains = this.getCurrent(rule);
         const { classes } = this.props;
@@ -105,7 +104,10 @@ class RuleTableInner extends React.Component<Props> {
                 <TableCell className={classes.cell}>
                     {rule.active ? (
                         (outOfRange ? '(' : '') +
-                        (rule.oneTime ? '*' : '') + remains.toString() + ' / ' + rule.period.toString() +
+                        (rule.oneTime ? '*' : '') +
+                        remains.toString() +
+                        ' / ' +
+                        rule.period.toString() +
                         (outOfRange ? ')' : '')
                     ) : (
                         <OffIcon />

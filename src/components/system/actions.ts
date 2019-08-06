@@ -6,6 +6,11 @@ export const DELETE_RULE = '@system/DELETE_RULE';
 const DELETE_CURRENT = '@system/DELETE_CURRENT';
 export const UPDATE_CURRENT = '@system/UPDATE_CURRENT';
 
+export interface SkipInfo {
+    ignorePinned: boolean;
+    match: string;
+}
+
 export interface CronRule {
     id: string;
     url: string;
@@ -15,6 +20,7 @@ export interface CronRule {
     oneTime: boolean;
     startTime: number;
     endTime: number;
+    skipInfo?: SkipInfo;
 }
 
 interface AddRule {
