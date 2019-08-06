@@ -6,7 +6,7 @@
         "target": "es5",
         "jsx": "react",
         "moduleResolution": "node",
-        "lib": ["es6", "dom"],
+        "lib": ["es6", "dom",  "es2017"],
         "baseUrl": "./src",
     },
     "exclude": [

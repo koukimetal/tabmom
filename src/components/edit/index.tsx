@@ -11,6 +11,8 @@ import {
     ModalMode,
     updateOneTime,
     updateDeleteFlag,
+    updateStartTime,
+    updateEndTime,
     updateCurrent as editUpdateCurrent,
 } from './actions';
 import Modal from '@material-ui/core/Modal';
@@ -70,6 +72,8 @@ interface DispatchProps {
     systemUpdateCurrent: typeof systemUpdateCurrent;
     editUpdateCurrent: typeof editUpdateCurrent;
     updateOneTime: typeof updateOneTime;
+    updateStartTime: typeof updateStartTime;
+    updateEndTime: typeof updateEndTime;
 }
 
 interface StateProps {
@@ -78,6 +82,20 @@ interface StateProps {
 }
 
 interface Props extends DispatchProps, StateProps, WithStyles<typeof styles> {}
+
+const isValidTime = (time: string) => {
+    const [sHour, sMin] = time.split(':');
+    if (!sHour || !sMin) {
+        return false;
+    }
+    const hour = parseInt(sHour);
+    const min = parseInt(sMin);
+    if (!Number.isInteger(hour) || !Number.isInteger(min)) {
+        return false;
+    }
+
+    return 0 <= hour && hour < 24 && 0 <= min && min < 60;
+};
 
 class EditModalInner extends React.Component<Props> {
     private changeName = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,6 +116,21 @@ class EditModalInner extends React.Component<Props> {
     private toggleOneTime = () => {
         this.props.updateOneTime(!this.props.edit.oneTime);
     };
+    private changeStartTime = (event: React.ChangeEvent<HTMLInputElement>) => {
+        console.log(event.currentTarget.value);
+        this.props.updateStartTime(event.currentTarget.value);
+    };
+    private changeEndTime = (event: React.ChangeEvent<HTMLInputElement>) => {
+        console.log(event.currentTarget.value);
+        this.props.updateEndTime(event.currentTarget.value);
+    };
+
+    private convertTimeToNumber = (time: string) => {
+        const [sHour, sMin] = time.split(':');
+        const hour = parseInt(sHour);
+        const min = parseInt(sMin);
+        return hour * 60 + min;
+    };
 
     private save = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -107,6 +140,8 @@ class EditModalInner extends React.Component<Props> {
         const createNew = edit.targetId === null;
 
         const id = createNew ? uuidV1() : edit.targetId;
+        const startTime = this.convertTimeToNumber(edit.startTime);
+        const endTime = this.convertTimeToNumber(edit.endTime);
         const rule: CronRule = {
             id,
             name: edit.name,
@@ -114,6 +149,8 @@ class EditModalInner extends React.Component<Props> {
             active: edit.active,
             url: edit.url,
             oneTime: edit.oneTime,
+            startTime,
+            endTime,
         };
 
         if (createNew) {
@@ -189,6 +226,24 @@ class EditModalInner extends React.Component<Props> {
                                 />
                             </div>
                             <div>
+                                <TextField
+                                    label="StartTime"
+                                    className={classes.textField}
+                                    value={edit.startTime}
+                                    onChange={this.changeStartTime}
+                                    type="time"
+                                    margin="normal"
+                                />
+                                <TextField
+                                    label="EndTime"
+                                    className={classes.textField}
+                                    value={edit.endTime}
+                                    type="time"
+                                    onChange={this.changeEndTime}
+                                    margin="normal"
+                                />
+                            </div>
+                            <div>
                                 <FormGroup row>
                                     <FormControlLabel
                                         control={
@@ -261,6 +316,9 @@ class EditModalInner extends React.Component<Props> {
 }
 
 const validator = (editState: EditModalState) => {
+    if (!isValidTime(editState.startTime) || !isValidTime(editState.endTime)) {
+        return false;
+    }
     // FYI: parseInt("12a") is 12
     if (editState.mode === ModalMode.CREATE) {
         const period = parseInt(editState.period);
@@ -293,6 +351,8 @@ export const EditModal = connect<StateProps, DispatchProps>(
         deleteCurrent,
         updateDeleteFlag,
         systemUpdateCurrent,
+        updateStartTime,
+        updateEndTime,
         editUpdateCurrent,
         updateOneTime,
     },

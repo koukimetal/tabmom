@@ -23,6 +23,7 @@ import {
     ArrowUpward as UpIcon,
     ArrowDownward as DownIcon,
 } from '@material-ui/icons';
+import { getNowNumber } from '../../shared';
 
 const styles = (theme: Theme) =>
     createStyles({
@@ -44,7 +45,7 @@ const styles = (theme: Theme) =>
         },
         period: {
             padding: theme.spacing(1),
-            width: 85,
+            width: 91,
         },
         table: {
             minWidth: 600,
@@ -89,9 +90,11 @@ class RuleTableInner extends React.Component<Props> {
         this.props.swapRule(a, b);
     };
 
-    private renderTableRow = (rule: CronRule, idx: number, ruleSize: number) => {
+
+    private renderTableRow = (rule: CronRule, idx: number, ruleSize: number, nowNumber: number) => {
         const remains = this.getCurrent(rule);
         const { classes } = this.props;
+        const outOfRange = nowNumber < rule.startTime || rule.endTime < nowNumber;
         return (
             <TableRow key={rule.id}>
                 <TableCell className={classes.cell}>
@@ -101,7 +104,9 @@ class RuleTableInner extends React.Component<Props> {
                 </TableCell>
                 <TableCell className={classes.cell}>
                     {rule.active ? (
-                        (rule.oneTime ? '*' : '') + remains.toString() + ' / ' + rule.period.toString()
+                        (outOfRange ? '(' : '') +
+                        (rule.oneTime ? '*' : '') + remains.toString() + ' / ' + rule.period.toString() +
+                        (outOfRange ? ')' : '')
                     ) : (
                         <OffIcon />
                     )}
@@ -135,6 +140,7 @@ class RuleTableInner extends React.Component<Props> {
     public render() {
         const { system, classes } = this.props;
 
+        const nowNumber = getNowNumber();
         return (
             <Paper className={classes.root}>
                 <Table className={classes.table}>
@@ -148,7 +154,7 @@ class RuleTableInner extends React.Component<Props> {
                     </TableHead>
                     <TableBody>
                         {system.ruleOrder.map((id, idx) =>
-                            this.renderTableRow(system.rules[id], idx, system.ruleOrder.length),
+                            this.renderTableRow(system.rules[id], idx, system.ruleOrder.length, nowNumber),
                         )}
                     </TableBody>
                 </Table>

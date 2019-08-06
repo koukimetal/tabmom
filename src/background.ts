@@ -1,3 +1,4 @@
+import { getNowNumber } from './shared';
 import {
     getRule,
     TimerMessage,
@@ -10,6 +11,7 @@ import {
 } from './proxy';
 const main = () => {
     chrome.alarms.create('MINUTE', { periodInMinutes: 1 });
+    const nowNumber = getNowNumber();
     chrome.alarms.onAlarm.addListener(async alarm => {
         if (alarm.name === 'MINUTE') {
             const ruleOrder = (await getRuleOrder()) || [];
@@ -33,7 +35,9 @@ const main = () => {
                             chrome.runtime.sendMessage(message);
                         }
                         time = rule.period;
-                        chrome.tabs.create({ url: rule.url });
+                        if (rule.startTime <= nowNumber && nowNumber <= rule.endTime) {
+                            chrome.tabs.create({ url: rule.url });
+                        }
                     } else {
                         time--;
                     }

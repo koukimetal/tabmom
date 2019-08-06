@@ -13,6 +13,8 @@ export interface CronRule {
     period: number;
     active: boolean;
     oneTime: boolean;
+    startTime: number;
+    endTime: number;
 }
 
 interface AddRule {
