@@ -11,9 +11,9 @@ import {
 } from './proxy';
 const main = () => {
     chrome.alarms.create('MINUTE', { periodInMinutes: 1 });
-    const nowNumber = getNowNumber();
     chrome.alarms.onAlarm.addListener(async alarm => {
         if (alarm.name === 'MINUTE') {
+            const nowNumber = getNowNumber();
             const ruleOrder = (await getRuleOrder()) || [];
             await Promise.all(
                 ruleOrder.map(async id => {

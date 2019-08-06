@@ -117,11 +117,9 @@ class EditModalInner extends React.Component<Props> {
         this.props.updateOneTime(!this.props.edit.oneTime);
     };
     private changeStartTime = (event: React.ChangeEvent<HTMLInputElement>) => {
-        console.log(event.currentTarget.value);
         this.props.updateStartTime(event.currentTarget.value);
     };
     private changeEndTime = (event: React.ChangeEvent<HTMLInputElement>) => {
-        console.log(event.currentTarget.value);
         this.props.updateEndTime(event.currentTarget.value);
     };
 
