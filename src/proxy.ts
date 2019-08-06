@@ -7,7 +7,7 @@ const CURRNET_PREFIX = 'CURRENT_';
 export const setRule = (rule: CronRule) =>
     new Promise(resolve => {
         const key = RULE_PREFIX + rule.id;
-        chrome.storage.sync.set({ [key]: rule }, () => {
+        chrome.storage.local.set({ [key]: rule }, () => {
             resolve();
         });
     });
@@ -15,7 +15,7 @@ export const setRule = (rule: CronRule) =>
 export const getRule = (id: string) =>
     new Promise<CronRule>(resolve => {
         const key = RULE_PREFIX + id;
-        chrome.storage.sync.get([key], values => {
+        chrome.storage.local.get([key], values => {
             resolve(values[key]);
         });
     });
@@ -23,21 +23,21 @@ export const getRule = (id: string) =>
 export const deleteRule = (id: string) =>
     new Promise<void>(resolve => {
         const key = RULE_PREFIX + id;
-        chrome.storage.sync.remove([key], () => {
+        chrome.storage.local.remove([key], () => {
             resolve();
         });
     });
 
 export const setRuleOrder = (ruleOrder: string[]) =>
     new Promise(resolve => {
-        chrome.storage.sync.set({ [RULE_ORDER_KEY]: ruleOrder }, () => {
+        chrome.storage.local.set({ [RULE_ORDER_KEY]: ruleOrder }, () => {
             resolve();
         });
     });
 
 export const getRuleOrder = () =>
     new Promise<string[]>(resolve => {
-        chrome.storage.sync.get([RULE_ORDER_KEY], values => {
+        chrome.storage.local.get([RULE_ORDER_KEY], values => {
             resolve(values[RULE_ORDER_KEY]);
         });
     });
