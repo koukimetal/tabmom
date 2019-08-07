@@ -1,5 +1,5 @@
 import { CronRule } from './components/system/actions';
-import { getNowNumber } from './shared';
+import { calculateNowMinutes } from './shared';
 import {
     getRule,
     TimerMessage,
@@ -8,6 +8,7 @@ import {
     setCurrentTime,
     getRuleOrder,
     UpdateRuleMessage,
+    UpdateNowDateMessage,
     setRule,
     getAllTabs,
 } from './proxy';
@@ -15,16 +16,33 @@ const main = () => {
     chrome.alarms.create('MINUTE', { periodInMinutes: 1 });
     chrome.alarms.onAlarm.addListener(async alarm => {
         if (alarm.name === 'MINUTE') {
-            const nowNumber = getNowNumber();
+            const now = new Date();
+            const nowMinutes = calculateNowMinutes(now);
+            const nowDay = now.getDay();
             const allTabs = await getAllTabs();
             const ruleOrder = (await getRuleOrder()) || [];
 
+            const updateNowDateMessage: UpdateNowDateMessage = {
+                type: MessageType.UPDATE_NOW_DATE,
+                date: {
+                    nowMinutes,
+                    nowDay,
+                },
+            };
+            chrome.runtime.sendMessage(updateNowDateMessage);
+
             const shouldOpen = (rule: CronRule) => {
-                if (nowNumber < rule.startTime || rule.endTime < nowNumber) {
+                if (nowMinutes < rule.startTime || rule.endTime < nowMinutes) {
                     return false;
                 }
 
-                const { skipInfo } = rule;
+                const { skipInfo, weekSetting } = rule;
+
+                if (weekSetting) {
+                    if (!weekSetting[nowDay]) {
+                        return false;
+                    }
+                }
 
                 if (skipInfo) {
                     const hitTab = allTabs

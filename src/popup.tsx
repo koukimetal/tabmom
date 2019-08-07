@@ -2,7 +2,8 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { App } from './App';
 import { getRule, getCurrentTime, getRuleOrder } from './proxy';
-import { CurrentMap, RuleMap } from 'components/system/actions';
+import { CurrentMap, RuleMap, SystemDate } from 'components/system/actions';
+import { calculateNowMinutes } from './shared';
 
 const main = async () => {
     const ruleOrder = (await getRuleOrder()) || [];
@@ -22,7 +23,15 @@ const main = async () => {
             current[id] = time;
         }),
     );
-    ReactDOM.render(<App ruleOrder={ruleOrder} current={current} rules={rules} />, document.getElementById('main'));
+    const newDate = new Date();
+    const nowDate: SystemDate = {
+        nowDay: newDate.getDay(),
+        nowMinutes: calculateNowMinutes(newDate),
+    };
+    ReactDOM.render(
+        <App ruleOrder={ruleOrder} current={current} rules={rules} nowDate={nowDate} />,
+        document.getElementById('main'),
+    );
 };
 
 (async () => {

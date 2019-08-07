@@ -12,12 +12,25 @@ const UPDATE_END_TIME = '@edit/UPDATE_END_TIME';
 const UPDATE_IS_SKIP_INFO_ACTIVE = '@edit/UPDATE_IS_SKIP_INFO_ACTIVE';
 const UPDATE_SKIP_INFO_IGNORE_PINNED = '@edit/UPDATE_SKIP_INFO_IGNORE_PINNED';
 const UPDATE_SKIP_INFO_MATCH = '@edit/UPDATE_SKIP_INFO_MATCH';
+const UPDATE_IS_WEEK_SETTING_ACTIVE = '@edit/UPDATE_IS_WEEK_SETTING_ACTIVE';
+const UPDATE_WEEK_SETTING = '@edit/UPDATE_WEEK_SETTING';
 
 const OPEN_MODAL_CREATE = '@edit/OPEN_MODAL_CREATE';
 const OPEN_MODAL_EDIT = '@edit/OPEN_MODAL_EDIT';
 const CLOSE_MODAL = '@edit/CLOSE_MODAL';
 
 const UPDATE_DELETE_FLAG = '@edit/UPDATE_DELETE_FLAG';
+
+interface UpdateIsWeekSettingActive {
+    type: typeof UPDATE_IS_WEEK_SETTING_ACTIVE;
+    isWeekSettingActive: boolean;
+}
+
+interface UpdateWeekSetting {
+    type: typeof UPDATE_WEEK_SETTING;
+    availability: boolean;
+    day: number;
+}
 
 interface UpdateIsSkipInfoActive {
     type: typeof UPDATE_IS_SKIP_INFO_ACTIVE;
@@ -114,6 +127,8 @@ export type EditModalAction =
     | UpdateIsSkipInfoActive
     | UpdateSkipInfoIgnorePinned
     | UpdateSkipInfoMatch
+    | UpdateIsWeekSettingActive
+    | UpdateWeekSetting
     | OpenModalEdit;
 
 export interface EditModalState {
@@ -127,6 +142,8 @@ export interface EditModalState {
     startTime: string;
     endTime: string;
     isSkipInfoActive: boolean;
+    isWeekSettingActive: boolean;
+    weekSetting: boolean[];
     skipInfo: SkipInfo;
     targetId?: string;
     current?: string;
@@ -186,6 +203,38 @@ const isSkipInfoActive = (state = false, action: EditModalAction) => {
             return false;
         case OPEN_MODAL_EDIT:
             return !!action.rule.skipInfo;
+        default:
+            return defaultReducer(state, false, action);
+    }
+};
+
+const weekSetting = (state: boolean[] = [], action: EditModalAction) => {
+    const initial = new Array<boolean>(7).fill(true);
+    switch (action.type) {
+        case OPEN_MODAL_CREATE:
+            return initial;
+        case OPEN_MODAL_EDIT:
+            if (!action.rule.weekSetting) {
+                return initial;
+            }
+            return action.rule.weekSetting;
+        case UPDATE_WEEK_SETTING:
+            const next = [...state];
+            next[action.day] = action.availability;
+            return next;
+        default:
+            return defaultReducer(state, initial, action);
+    }
+};
+
+const isWeekSettingActive = (state = false, action: EditModalAction) => {
+    switch (action.type) {
+        case OPEN_MODAL_CREATE:
+            return false;
+        case OPEN_MODAL_EDIT:
+            return !!action.rule.weekSetting;
+        case UPDATE_IS_WEEK_SETTING_ACTIVE:
+            return action.isWeekSettingActive;
         default:
             return defaultReducer(state, false, action);
     }
@@ -427,6 +476,21 @@ export const updateSkipInfoMatch = (match: string): UpdateSkipInfoMatch => {
     };
 };
 
+export const updateIsWeekSettingActive = (isWeekSettingActive: boolean): UpdateIsWeekSettingActive => {
+    return {
+        type: UPDATE_IS_WEEK_SETTING_ACTIVE,
+        isWeekSettingActive,
+    };
+};
+
+export const updateWeekSetting = (day: number, availability: boolean): UpdateWeekSetting => {
+    return {
+        type: UPDATE_WEEK_SETTING,
+        day,
+        availability,
+    };
+};
+
 export const editModalReducer = combineReducers<EditModalState, EditModalAction>({
     name,
     url,
@@ -441,4 +505,6 @@ export const editModalReducer = combineReducers<EditModalState, EditModalAction>
     oneTime,
     skipInfo,
     isSkipInfoActive,
+    weekSetting,
+    isWeekSettingActive,
 });

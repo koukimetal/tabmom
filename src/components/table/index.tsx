@@ -23,7 +23,6 @@ import {
     ArrowUpward as UpIcon,
     ArrowDownward as DownIcon,
 } from '@material-ui/icons';
-import { getNowNumber } from '../../shared';
 
 const styles = (theme: Theme) =>
     createStyles({
@@ -90,10 +89,11 @@ class RuleTableInner extends React.Component<Props> {
         this.props.swapRule(a, b);
     };
 
-    private renderTableRow = (rule: CronRule, idx: number, ruleSize: number, nowNumber: number) => {
+    private renderTableRow = (rule: CronRule, idx: number, ruleSize: number, nowMinutes: number, nowDay: number) => {
         const remains = this.getCurrent(rule);
         const { classes } = this.props;
-        const outOfRange = nowNumber < rule.startTime || rule.endTime < nowNumber;
+        const outOfRange =
+            nowMinutes < rule.startTime || rule.endTime < nowMinutes || (rule.weekSetting && !rule.weekSetting[nowDay]);
         return (
             <TableRow key={rule.id}>
                 <TableCell className={classes.cell}>
@@ -142,7 +142,7 @@ class RuleTableInner extends React.Component<Props> {
     public render() {
         const { system, classes } = this.props;
 
-        const nowNumber = getNowNumber();
+        const { nowMinutes, nowDay } = system.nowDate;
         return (
             <Paper className={classes.root}>
                 <Table className={classes.table}>
@@ -156,7 +156,7 @@ class RuleTableInner extends React.Component<Props> {
                     </TableHead>
                     <TableBody>
                         {system.ruleOrder.map((id, idx) =>
-                            this.renderTableRow(system.rules[id], idx, system.ruleOrder.length, nowNumber),
+                            this.renderTableRow(system.rules[id], idx, system.ruleOrder.length, nowMinutes, nowDay),
                         )}
                     </TableBody>
                 </Table>

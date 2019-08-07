@@ -16,6 +16,8 @@ import {
     updateIsSkipInfoActive,
     updateSkipInfoIgnorePinned,
     updateSkipInfoMatch,
+    updateIsWeekSettingActive,
+    updateWeekSetting,
     updateCurrent as editUpdateCurrent,
 } from './actions';
 import Modal from '@material-ui/core/Modal';
@@ -86,6 +88,8 @@ interface DispatchProps {
     updateIsSkipInfoActive: typeof updateIsSkipInfoActive;
     updateSkipInfoIgnorePinned: typeof updateSkipInfoIgnorePinned;
     updateSkipInfoMatch: typeof updateSkipInfoMatch;
+    updateIsWeekSettingActive: typeof updateIsWeekSettingActive;
+    updateWeekSetting: typeof updateWeekSetting;
 }
 
 interface StateProps {
@@ -108,6 +112,8 @@ const isValidTime = (time: string) => {
 
     return 0 <= hour && hour < 24 && 0 <= min && min < 60;
 };
+
+const DAY_TO_STRING: Readonly<string[]> = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 class EditModalInner extends React.Component<Props> {
     private changeName = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,6 +173,10 @@ class EditModalInner extends React.Component<Props> {
             rule.skipInfo = { ...edit.skipInfo };
         }
 
+        if (edit.isWeekSettingActive) {
+            rule.weekSetting = [...edit.weekSetting];
+        }
+
         if (createNew) {
             this.props.systemUpdateCurrent(id, periodNum);
             this.props.addRule(rule);
@@ -206,6 +216,41 @@ class EditModalInner extends React.Component<Props> {
 
     private changeSkipInfoMatch = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.props.updateSkipInfoMatch(event.currentTarget.value);
+    };
+
+    private toggleWeekSettingActive = () => {
+        const { edit } = this.props;
+        this.props.updateIsWeekSettingActive(!edit.isWeekSettingActive);
+    };
+
+    private toggleAWeekSetting = (day: number) => {
+        const { edit } = this.props;
+        this.props.updateWeekSetting(day, !edit.weekSetting[day]);
+    };
+
+    private renderADaySetting = (day: number) => {
+        const { edit } = this.props;
+        const checked = edit.weekSetting[day];
+        return (
+            <FormControlLabel
+                key={day}
+                control={<Checkbox checked={checked} onChange={() => this.toggleAWeekSetting(day)} value={checked} />}
+                label={DAY_TO_STRING[day]}
+            />
+        );
+    };
+
+    private renderWeekSetting = () => {
+        const res: JSX.Element[] = [];
+        for (let day = 0; day < 7; day++) {
+            res.push(this.renderADaySetting(day));
+        }
+
+        return (
+            <div>
+                <FormGroup row>{res}</FormGroup>
+            </div>
+        );
     };
 
     public render() {
@@ -298,8 +343,19 @@ class EditModalInner extends React.Component<Props> {
                                         }
                                         label="OneTime"
                                     />
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={edit.isWeekSettingActive}
+                                                onChange={this.toggleWeekSettingActive}
+                                                value={edit.isWeekSettingActive}
+                                            />
+                                        }
+                                        label="UseWeekSetting"
+                                    />
                                 </FormGroup>
                             </div>
+                            {edit.isWeekSettingActive && this.renderWeekSetting()}
                             <div>
                                 <FormGroup row>
                                     <FormControlLabel
@@ -430,5 +486,7 @@ export const EditModal = connect<StateProps, DispatchProps>(
         updateIsSkipInfoActive,
         updateSkipInfoIgnorePinned,
         updateSkipInfoMatch,
+        updateIsWeekSettingActive,
+        updateWeekSetting,
     },
 )(withStyles(styles)(EditModalInner));

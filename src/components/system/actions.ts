@@ -5,6 +5,7 @@ export const SWAP_RULE = '@system/SWAP_RULE';
 export const DELETE_RULE = '@system/DELETE_RULE';
 const DELETE_CURRENT = '@system/DELETE_CURRENT';
 export const UPDATE_CURRENT = '@system/UPDATE_CURRENT';
+export const SET_NOW_DATE = '@system/SET_NOW_DATE';
 
 export interface SkipInfo {
     ignorePinned: boolean;
@@ -21,6 +22,7 @@ export interface CronRule {
     startTime: number;
     endTime: number;
     skipInfo?: SkipInfo;
+    weekSetting?: boolean[];
 }
 
 interface AddRule {
@@ -55,7 +57,18 @@ interface UpdateCurrent {
     time: number;
 }
 
-export type SystemAction = AddRule | UpdateRule | DeleteRule | DeleteCurrent | UpdateCurrent | SwapRule;
+// Looks like we can't send raw Date class on Message
+export interface SystemDate {
+    nowMinutes: number;
+    nowDay: number;
+}
+
+interface SetNowDate {
+    type: typeof SET_NOW_DATE;
+    date: SystemDate;
+}
+
+export type SystemAction = AddRule | UpdateRule | DeleteRule | DeleteCurrent | UpdateCurrent | SwapRule | SetNowDate;
 
 export interface CurrentMap {
     [id: string]: number;
@@ -69,6 +82,7 @@ export interface SystemState {
     rules: RuleMap;
     ruleOrder: string[];
     current: CurrentMap;
+    nowDate: SystemDate;
 }
 
 const ruleOrder = (state: string[] = [], action: SystemAction) => {
@@ -98,6 +112,15 @@ const rules = (state: RuleMap = {}, action: SystemAction) => {
             const next = { ...state };
             delete next[action.id];
             return next;
+        default:
+            return state;
+    }
+};
+
+const nowDate = (state: SystemDate = null, action: SystemAction) => {
+    switch (action.type) {
+        case SET_NOW_DATE:
+            return action.date;
         default:
             return state;
     }
@@ -160,8 +183,15 @@ export const updateCurrent = (id: string, time: number): UpdateCurrent => {
     };
 };
 
+export const setNowDate = (date: SystemDate): SetNowDate => {
+    return {
+        type: SET_NOW_DATE,
+        date,
+    };
+};
 export const systemReducer = combineReducers<SystemState, SystemAction>({
     rules,
     current,
     ruleOrder,
+    nowDate,
 });

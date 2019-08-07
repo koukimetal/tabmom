@@ -14,6 +14,7 @@ import {
     SWAP_RULE as SYSTEM_SWAP_RULE,
     UPDATE_RULE as SYSTEM_UPDATE_RULE,
     updateRule,
+    setNowDate,
     SystemState,
 } from './components/system/actions';
 import {
@@ -63,6 +64,8 @@ export const App: React.SFC<AppProps> = props => {
             store.dispatch(updateCurrent(message.id, message.time));
         } else if (message.type === MessageType.UPDATE_RULE) {
             store.dispatch(updateRule(message.rule));
+        } else if (message.type === MessageType.UPDATE_NOW_DATE) {
+            store.dispatch(setNowDate(message.date));
         }
     });
 

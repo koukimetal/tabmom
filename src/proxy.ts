@@ -1,4 +1,4 @@
-import { CronRule } from './components/system/actions';
+import { CronRule, SystemDate } from './components/system/actions';
 
 const RULE_ORDER_KEY = 'rule_order';
 const RULE_PREFIX = 'RULE_';
@@ -85,6 +85,7 @@ export const getAllTabs = () =>
 export enum MessageType {
     TIMER,
     UPDATE_RULE,
+    UPDATE_NOW_DATE,
 }
 
 export interface TimerMessage {
@@ -98,4 +99,9 @@ export interface UpdateRuleMessage {
     rule: CronRule;
 }
 
-export type TabMomMessage = TimerMessage | UpdateRuleMessage;
+export interface UpdateNowDateMessage {
+    type: MessageType.UPDATE_NOW_DATE;
+    date: SystemDate;
+}
+
+export type TabMomMessage = TimerMessage | UpdateRuleMessage | UpdateNowDateMessage;
