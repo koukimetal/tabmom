@@ -39,7 +39,7 @@ import {
     deleteCurrent,
     updateCurrent as systemUpdateCurrent,
 } from '../system/actions';
-import { Save as SaveIcon, Delete as DeleteIcon } from '@material-ui/icons';
+import { Save as SaveIcon, Delete as DeleteIcon, Close as CloseIcon } from '@material-ui/icons';
 import * as uuidV1 from 'uuid/v1';
 
 const styles = (theme: Theme) =>
@@ -58,6 +58,12 @@ const styles = (theme: Theme) =>
         },
         button: {
             margin: theme.spacing(1),
+        },
+        top: {
+            display: 'flex',
+        },
+        close: {
+            marginLeft: 'auto',
         },
     });
 
@@ -209,15 +215,20 @@ class EditModalInner extends React.Component<Props> {
                 <>
                     <Paper className={classes.root}>
                         <form onSubmit={this.save}>
-                            <div>
-                                <TextField
-                                    label="Name"
-                                    className={classes.fullTextField}
-                                    value={edit.name}
-                                    onChange={this.changeName}
-                                    margin="normal"
-                                    fullWidth
-                                />
+                            <div className={classes.top}>
+                                <div>
+                                    <TextField
+                                        label="Name"
+                                        className={classes.fullTextField}
+                                        value={edit.name}
+                                        onChange={this.changeName}
+                                        margin="normal"
+                                        fullWidth
+                                    />
+                                </div>
+                                <div className={classes.close}>
+                                    <CloseIcon onClick={this.close} />
+                                </div>
                             </div>
                             <div>
                                 {edit.mode === ModalMode.EDIT && (
