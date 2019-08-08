@@ -5,20 +5,13 @@ import {
     EditModalState,
     updateName,
     closeModal,
-    updatePeriod,
     updateUrl,
     updateActive,
     ModalMode,
     updateOneTime,
     updateDeleteFlag,
-    updateStartTime,
-    updateEndTime,
-    updateIsSkipInfoActive,
-    updateSkipInfoIgnorePinned,
-    updateSkipInfoMatch,
     updateIsWeekSettingActive,
     updateWeekSetting,
-    updateCurrent as editUpdateCurrent,
 } from './actions';
 import Modal from '@material-ui/core/Modal';
 import {
@@ -42,6 +35,8 @@ import {
     updateCurrent as systemUpdateCurrent,
 } from '../system/actions';
 import { Save as SaveIcon, Delete as DeleteIcon, Close as CloseIcon } from '@material-ui/icons';
+import { EditSkipInfo } from './skip_info';
+import { EditModalPeriod } from './period';
 import * as uuidV1 from 'uuid/v1';
 
 const styles = (theme: Theme) =>
@@ -72,7 +67,6 @@ const styles = (theme: Theme) =>
 interface DispatchProps {
     updateName: typeof updateName;
     closeModal: typeof closeModal;
-    updatePeriod: typeof updatePeriod;
     updateUrl: typeof updateUrl;
     updateActive: typeof updateActive;
     addRule: typeof addRule;
@@ -81,13 +75,7 @@ interface DispatchProps {
     deleteCurrent: typeof deleteCurrent;
     updateDeleteFlag: typeof updateDeleteFlag;
     systemUpdateCurrent: typeof systemUpdateCurrent;
-    editUpdateCurrent: typeof editUpdateCurrent;
     updateOneTime: typeof updateOneTime;
-    updateStartTime: typeof updateStartTime;
-    updateEndTime: typeof updateEndTime;
-    updateIsSkipInfoActive: typeof updateIsSkipInfoActive;
-    updateSkipInfoIgnorePinned: typeof updateSkipInfoIgnorePinned;
-    updateSkipInfoMatch: typeof updateSkipInfoMatch;
     updateIsWeekSettingActive: typeof updateIsWeekSettingActive;
     updateWeekSetting: typeof updateWeekSetting;
 }
@@ -119,12 +107,6 @@ class EditModalInner extends React.Component<Props> {
     private changeName = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.props.updateName(event.currentTarget.value);
     };
-    private changePeriod = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.props.updatePeriod(event.currentTarget.value);
-    };
-    private changeCurrent = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.props.editUpdateCurrent(event.currentTarget.value);
-    };
     private changeUrl = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.props.updateUrl(event.currentTarget.value);
     };
@@ -133,12 +115,6 @@ class EditModalInner extends React.Component<Props> {
     };
     private toggleOneTime = () => {
         this.props.updateOneTime(!this.props.edit.oneTime);
-    };
-    private changeStartTime = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.props.updateStartTime(event.currentTarget.value);
-    };
-    private changeEndTime = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.props.updateEndTime(event.currentTarget.value);
     };
 
     private convertTimeToNumber = (time: string) => {
@@ -204,20 +180,6 @@ class EditModalInner extends React.Component<Props> {
         this.props.updateDeleteFlag(!edit.deleteFlag);
     };
 
-    private toggleIsSkipInfoActive = () => {
-        const { edit } = this.props;
-        this.props.updateIsSkipInfoActive(!edit.isSkipInfoActive);
-    };
-
-    private toggleIgnorePinned = () => {
-        const { edit } = this.props;
-        this.props.updateSkipInfoIgnorePinned(!edit.skipInfo.ignorePinned);
-    };
-
-    private changeSkipInfoMatch = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.props.updateSkipInfoMatch(event.currentTarget.value);
-    };
-
     private toggleWeekSettingActive = () => {
         const { edit } = this.props;
         this.props.updateIsWeekSettingActive(!edit.isWeekSettingActive);
@@ -276,24 +238,6 @@ class EditModalInner extends React.Component<Props> {
                                 </div>
                             </div>
                             <div>
-                                {edit.mode === ModalMode.EDIT && (
-                                    <TextField
-                                        label="Current"
-                                        className={classes.textField}
-                                        value={edit.current}
-                                        onChange={this.changeCurrent}
-                                        margin="normal"
-                                    />
-                                )}
-                                <TextField
-                                    label="Period"
-                                    className={classes.textField}
-                                    value={edit.period}
-                                    onChange={this.changePeriod}
-                                    margin="normal"
-                                />
-                            </div>
-                            <div>
                                 <TextField
                                     label="URL"
                                     className={classes.fullTextField}
@@ -303,24 +247,7 @@ class EditModalInner extends React.Component<Props> {
                                     fullWidth
                                 />
                             </div>
-                            <div>
-                                <TextField
-                                    label="StartTime"
-                                    className={classes.textField}
-                                    value={edit.startTime}
-                                    onChange={this.changeStartTime}
-                                    type="time"
-                                    margin="normal"
-                                />
-                                <TextField
-                                    label="EndTime"
-                                    className={classes.textField}
-                                    value={edit.endTime}
-                                    type="time"
-                                    onChange={this.changeEndTime}
-                                    margin="normal"
-                                />
-                            </div>
+                            <EditModalPeriod />
                             <div>
                                 <FormGroup row>
                                     <FormControlLabel
@@ -356,46 +283,7 @@ class EditModalInner extends React.Component<Props> {
                                 </FormGroup>
                             </div>
                             {edit.isWeekSettingActive && this.renderWeekSetting()}
-                            <div>
-                                <FormGroup row>
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={edit.isSkipInfoActive}
-                                                onChange={this.toggleIsSkipInfoActive}
-                                                value={edit.isSkipInfoActive}
-                                            />
-                                        }
-                                        label="UseSkipInfo"
-                                    />
-                                    {edit.isSkipInfoActive && (
-                                        <FormControlLabel
-                                            control={
-                                                <Checkbox
-                                                    checked={edit.skipInfo.ignorePinned}
-                                                    onChange={this.toggleIgnorePinned}
-                                                    value={edit.skipInfo.ignorePinned}
-                                                />
-                                            }
-                                            label="Ignore pinned tabs"
-                                        />
-                                    )}
-                                </FormGroup>
-                            </div>
-
-                            {edit.isSkipInfoActive && (
-                                <div>
-                                    <TextField
-                                        label="Skip openning if there is a tab whose URL includes this"
-                                        className={classes.fullTextField}
-                                        value={edit.skipInfo.match}
-                                        onChange={this.changeSkipInfoMatch}
-                                        margin="normal"
-                                        fullWidth
-                                    />
-                                </div>
-                            )}
-
+                            <EditSkipInfo />
                             <div>
                                 <Button
                                     variant="contained"
@@ -471,7 +359,6 @@ export const EditModal = connect<StateProps, DispatchProps>(
         updateName,
         closeModal,
         updateUrl,
-        updatePeriod,
         updateActive,
         addRule,
         deleteRule,
@@ -479,13 +366,7 @@ export const EditModal = connect<StateProps, DispatchProps>(
         deleteCurrent,
         updateDeleteFlag,
         systemUpdateCurrent,
-        updateStartTime,
-        updateEndTime,
-        editUpdateCurrent,
         updateOneTime,
-        updateIsSkipInfoActive,
-        updateSkipInfoIgnorePinned,
-        updateSkipInfoMatch,
         updateIsWeekSettingActive,
         updateWeekSetting,
     },
