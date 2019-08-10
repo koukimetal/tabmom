@@ -83,7 +83,8 @@ const ActiveWrapper: React.SFC<{
     if (
         (rule.weekSetting && !rule.weekSetting[nowDay]) ||
         (rule.clockConfig.type === TimeRangeType.MANY &&
-            (nowMinutes < rule.clockConfig.startTime || rule.clockConfig.endTime < nowMinutes))
+            (nowMinutes < rule.clockConfig.startTime || rule.clockConfig.endTime < nowMinutes)) ||
+        (rule.clockConfig.type === TimeRangeType.ONCE && nowMinutes >= rule.clockConfig.startTime)
     ) {
         wrapFront = '(';
         wrapBack = ')';
