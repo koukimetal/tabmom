@@ -16,6 +16,7 @@ import {
     updateRule,
     setNowDate,
     SystemState,
+    isNeedPeriod,
 } from './components/system/actions';
 import {
     setRule,
@@ -44,9 +45,16 @@ export const App: React.SFC<AppProps> = props => {
         if (lastAction.type === SYSTEM_ADD_RULE) {
             setRuleOrder(store.getState().system.ruleOrder);
             setRule(lastAction.rule);
-            setCurrentTime(lastAction.rule.id, lastAction.rule.period);
+            const { clockConfig } = lastAction.rule;
+            if (isNeedPeriod(clockConfig.type)) {
+                setCurrentTime(lastAction.rule.id, clockConfig.period);
+            }
         } else if (lastAction.type === SYSTEM_UPDATE_RULE) {
             setRule(lastAction.rule);
+            const { clockConfig } = lastAction.rule;
+            if (!isNeedPeriod(clockConfig.type)) {
+                deleteCurrentTime(lastAction.rule.id);
+            }
         } else if (lastAction.type === SYSTEM_DELETE_RULE) {
             setRuleOrder(store.getState().system.ruleOrder);
             deleteRule(lastAction.id);

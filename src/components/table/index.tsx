@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { AppState } from 'components/store';
+import { convertNumbetToTime } from '../shared';
 import {
     Theme,
     createStyles,
@@ -15,7 +16,7 @@ import {
     Link,
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
-import { SystemState, CronRule, swapRule } from '../system/actions';
+import { SystemState, CronRule, swapRule, TimeRangeType, SystemDate } from '../system/actions';
 import { editModal } from '../edit/actions';
 import {
     Edit as EditIcon,
@@ -65,20 +66,67 @@ interface StateProps {
 
 interface Props extends DispatchProps, StateProps, WithStyles<typeof styles> {}
 
-class RuleTableInner extends React.Component<Props> {
-    private getCurrent(rule: CronRule) {
-        const { system } = this.props;
-        if (!system.current[rule.id]) {
-            console.error('Sync error', rule.name);
-        }
-        return system.current[rule.id] ? system.current[rule.id] : rule.period;
+const ActiveWrapper: React.SFC<{
+    rule: CronRule;
+    nowDate: SystemDate;
+}> = props => {
+    const { rule, nowDate } = props;
+    const { nowMinutes, nowDay } = nowDate;
+
+    if (!rule.active) {
+        return <OffIcon />;
     }
 
+    let wrapFront = '';
+    let wrapBack = '';
+
+    if (
+        (rule.weekSetting && !rule.weekSetting[nowDay]) ||
+        (rule.clockConfig.type === TimeRangeType.MANY &&
+            (nowMinutes < rule.clockConfig.startTime || rule.clockConfig.endTime < nowMinutes))
+    ) {
+        wrapFront = '(';
+        wrapBack = ')';
+    }
+
+    if (rule.oneTime) {
+        wrapFront += '*';
+    }
+
+    return (
+        <>
+            {wrapFront}
+            {props.children}
+            {wrapBack}
+        </>
+    );
+};
+
+const TimeDisplay: React.SFC<{
+    system: SystemState;
+    rule: CronRule;
+    nowDate: SystemDate;
+}> = props => {
+    const { rule, system } = props;
+    if (rule.clockConfig.type === TimeRangeType.ALL || rule.clockConfig.type === TimeRangeType.MANY) {
+        const current = system.current[rule.id] || rule.clockConfig.period;
+        return <>{current.toString() + ' / ' + rule.clockConfig.period.toString()} +</>;
+    } else {
+        // ONCE
+        return <>{convertNumbetToTime(rule.clockConfig.startTime)}</>;
+    }
+};
+
+class RuleTableInner extends React.Component<Props> {
     private clickEdit = (id: string) => {
         const { system } = this.props;
         const rule = system.rules[id];
-        const current = this.getCurrent(rule);
-        this.props.editModal(rule, current);
+        if (rule.clockConfig.type === TimeRangeType.ONCE) {
+            this.props.editModal(rule);
+        } else {
+            const current = system.current[id] || rule.clockConfig.period;
+            this.props.editModal(rule, current);
+        }
     };
 
     private openLink = (url: string) => {
@@ -89,11 +137,8 @@ class RuleTableInner extends React.Component<Props> {
         this.props.swapRule(a, b);
     };
 
-    private renderTableRow = (rule: CronRule, idx: number, ruleSize: number, nowMinutes: number, nowDay: number) => {
-        const remains = this.getCurrent(rule);
-        const { classes } = this.props;
-        const outOfRange =
-            nowMinutes < rule.startTime || rule.endTime < nowMinutes || (rule.weekSetting && !rule.weekSetting[nowDay]);
+    private renderTableRow = (rule: CronRule, idx: number) => {
+        const { system, classes } = this.props;
         return (
             <TableRow key={rule.id}>
                 <TableCell className={classes.cell}>
@@ -102,16 +147,9 @@ class RuleTableInner extends React.Component<Props> {
                     </IconButton>
                 </TableCell>
                 <TableCell className={classes.cell}>
-                    {rule.active ? (
-                        (outOfRange ? '(' : '') +
-                        (rule.oneTime ? '*' : '') +
-                        remains.toString() +
-                        ' / ' +
-                        rule.period.toString() +
-                        (outOfRange ? ')' : '')
-                    ) : (
-                        <OffIcon />
-                    )}
+                    <ActiveWrapper rule={rule} nowDate={system.nowDate}>
+                        <TimeDisplay rule={rule} nowDate={system.nowDate} system={system} />
+                    </ActiveWrapper>
                 </TableCell>
                 <TableCell component="th" scope="row" className={classes.cell}>
                     <Link
@@ -129,7 +167,7 @@ class RuleTableInner extends React.Component<Props> {
                             <UpIcon fontSize="inherit" />
                         </IconButton>
                     )}
-                    {idx < ruleSize - 1 && (
+                    {idx < system.ruleOrder.length - 1 && (
                         <IconButton aria-label="edit" size="small" onClick={() => this.swapRule(idx, idx + 1)}>
                             <DownIcon fontSize="inherit" />
                         </IconButton>
@@ -141,8 +179,6 @@ class RuleTableInner extends React.Component<Props> {
 
     public render() {
         const { system, classes } = this.props;
-
-        const { nowMinutes, nowDay } = system.nowDate;
         return (
             <Paper className={classes.root}>
                 <Table className={classes.table}>
@@ -155,9 +191,7 @@ class RuleTableInner extends React.Component<Props> {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {system.ruleOrder.map((id, idx) =>
-                            this.renderTableRow(system.rules[id], idx, system.ruleOrder.length, nowMinutes, nowDay),
-                        )}
+                        {system.ruleOrder.map((id, idx) => this.renderTableRow(system.rules[id], idx))}
                     </TableBody>
                 </Table>
             </Paper>

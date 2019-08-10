@@ -1,5 +1,5 @@
-import { EditModalAction } from './actions';
-import { CronRule, SkipInfo } from './../system/actions';
+import { CronRule, SkipInfo, TimeRangeType } from './../system/actions';
+import { convertNumbetToTime } from '../shared';
 import { combineReducers } from 'redux';
 const UPDATE_URL = '@edit/UPDATE_URL';
 const UPDATE_CURRENT = '@edit/UPDATE_CURRENT';
@@ -14,12 +14,18 @@ const UPDATE_SKIP_INFO_IGNORE_PINNED = '@edit/UPDATE_SKIP_INFO_IGNORE_PINNED';
 const UPDATE_SKIP_INFO_MATCH = '@edit/UPDATE_SKIP_INFO_MATCH';
 const UPDATE_IS_WEEK_SETTING_ACTIVE = '@edit/UPDATE_IS_WEEK_SETTING_ACTIVE';
 const UPDATE_WEEK_SETTING = '@edit/UPDATE_WEEK_SETTING';
+const UPDATE_TIME_RANGE_TYPE = '@edit/UPDATE_TIME_RANGE_TYPE';
 
 const OPEN_MODAL_CREATE = '@edit/OPEN_MODAL_CREATE';
 const OPEN_MODAL_EDIT = '@edit/OPEN_MODAL_EDIT';
 const CLOSE_MODAL = '@edit/CLOSE_MODAL';
 
 const UPDATE_DELETE_FLAG = '@edit/UPDATE_DELETE_FLAG';
+
+interface UpdateTimeRangeType {
+    type: typeof UPDATE_TIME_RANGE_TYPE;
+    timeRangeType: TimeRangeType;
+}
 
 interface UpdateIsWeekSettingActive {
     type: typeof UPDATE_IS_WEEK_SETTING_ACTIVE;
@@ -79,7 +85,7 @@ interface OpenModalCreate {
 interface OpenModalEdit {
     type: typeof OPEN_MODAL_EDIT;
     rule: CronRule;
-    current: number;
+    current?: number;
 }
 
 interface UpdateCurrent {
@@ -128,19 +134,25 @@ export type EditModalAction =
     | UpdateSkipInfoIgnorePinned
     | UpdateSkipInfoMatch
     | UpdateIsWeekSettingActive
+    | UpdateTimeRangeType
     | UpdateWeekSetting
     | OpenModalEdit;
 
+export interface ClockConfigEdit {
+    type: TimeRangeType;
+    period?: string;
+    startTime?: string;
+    endTime?: string;
+}
+
 export interface EditModalState {
-    period: string;
     name: string;
     url: string;
     active: boolean;
     mode: ModalMode;
     deleteFlag: boolean;
     oneTime: boolean;
-    startTime: string;
-    endTime: string;
+    clockConfig: ClockConfigEdit;
     isSkipInfoActive: boolean;
     isWeekSettingActive: boolean;
     weekSetting: boolean[];
@@ -157,6 +169,79 @@ const defaultReducer = <T>(state: T, initialValue: T, action: EditModalAction) =
             return state;
     }
 };
+
+const period = (state = '', action: EditModalAction) => {
+    switch (action.type) {
+        case UPDATE_PERIOD:
+            return action.period;
+        case OPEN_MODAL_EDIT:
+            switch (action.rule.clockConfig.type) {
+                case TimeRangeType.ALL:
+                case TimeRangeType.MANY:
+                    return action.rule.clockConfig.period.toString();
+                default:
+                    // ONCE
+                    return '';
+            }
+        default:
+            return defaultReducer(state, '', action);
+    }
+};
+
+const startTime = (state = '00:00', action: EditModalAction) => {
+    switch (action.type) {
+        case UPDATE_START_TIME:
+            return action.time;
+        case OPEN_MODAL_EDIT:
+            switch (action.rule.clockConfig.type) {
+                case TimeRangeType.ONCE:
+                case TimeRangeType.MANY:
+                    return convertNumbetToTime(action.rule.clockConfig.startTime);
+                default:
+                    // ALL
+                    return '00:00';
+            }
+        default:
+            return defaultReducer(state, '00:00', action);
+    }
+};
+
+const endTime = (state = '23:59', action: EditModalAction) => {
+    switch (action.type) {
+        case UPDATE_END_TIME:
+            return action.time;
+        case OPEN_MODAL_EDIT:
+            switch (action.rule.clockConfig.type) {
+                case TimeRangeType.MANY:
+                    return convertNumbetToTime(action.rule.clockConfig.endTime);
+                default:
+                    // ALL or ONCE
+                    return '23:59';
+            }
+        default:
+            return defaultReducer(state, '23:59', action);
+    }
+};
+
+const clockConfigEditType = (state = TimeRangeType.ALL, action: EditModalAction) => {
+    switch (action.type) {
+        case OPEN_MODAL_CREATE:
+            return TimeRangeType.ALL;
+        case UPDATE_TIME_RANGE_TYPE:
+            return action.timeRangeType;
+        case OPEN_MODAL_EDIT:
+            return action.rule.clockConfig.type;
+        default:
+            return defaultReducer(state, TimeRangeType.ALL, action);
+    }
+};
+
+const clockConfig = combineReducers<ClockConfigEdit, EditModalAction>({
+    period,
+    startTime,
+    endTime,
+    type: clockConfigEditType,
+});
 
 const skipInfoIgnorePinned = (state = false, action: EditModalAction) => {
     switch (action.type) {
@@ -262,42 +347,6 @@ const targetId = (state: string = null, action: EditModalAction) => {
     }
 };
 
-const convertNumbetToTime = (time: number) => {
-    if (time < 0) {
-        return '00:00';
-    } else if (time >= 60 * 24) {
-        return '23:59';
-    } else {
-        const hour = Math.floor(time / 60)
-            .toString()
-            .padStart(2, '0');
-        const min = (time % 60).toString().padStart(2, '0');
-        return hour + ':' + min;
-    }
-};
-
-const startTime = (state = '00:00', action: EditModalAction) => {
-    switch (action.type) {
-        case UPDATE_START_TIME:
-            return action.time;
-        case OPEN_MODAL_EDIT:
-            return convertNumbetToTime(action.rule.startTime);
-        default:
-            return defaultReducer(state, '00:00', action);
-    }
-};
-
-const endTime = (state = '23:59', action: EditModalAction) => {
-    switch (action.type) {
-        case UPDATE_END_TIME:
-            return action.time;
-        case OPEN_MODAL_EDIT:
-            return convertNumbetToTime(action.rule.endTime);
-        default:
-            return defaultReducer(state, '23:59', action);
-    }
-};
-
 const deleteFlag = (state = false, action: EditModalAction) => {
     switch (action.type) {
         case UPDATE_DELETE_FLAG:
@@ -324,17 +373,6 @@ const url = (state = '', action: EditModalAction) => {
             return action.url;
         case OPEN_MODAL_EDIT:
             return action.rule.url;
-        default:
-            return defaultReducer(state, '', action);
-    }
-};
-
-const period = (state = '', action: EditModalAction) => {
-    switch (action.type) {
-        case UPDATE_PERIOD:
-            return action.period;
-        case OPEN_MODAL_EDIT:
-            return action.rule.period.toString();
         default:
             return defaultReducer(state, '', action);
     }
@@ -367,10 +405,22 @@ const current = (state = '', action: EditModalAction) => {
         case UPDATE_CURRENT:
             return action.current;
         case OPEN_MODAL_EDIT:
-            return action.current.toString();
+            if (action.current) {
+                // Current must be positive
+                return action.current.toString();
+            } else {
+                return '';
+            }
         default:
             return defaultReducer(state, '', action);
     }
+};
+
+export const updateTimeRangeType = (timeRangeType: TimeRangeType): UpdateTimeRangeType => {
+    return {
+        type: UPDATE_TIME_RANGE_TYPE,
+        timeRangeType,
+    };
 };
 
 export const updateStartTime = (time: string): UpdateStartTime => {
@@ -393,7 +443,7 @@ export const openModal = (): OpenModalCreate => {
     };
 };
 
-export const editModal = (rule: CronRule, current: number): OpenModalEdit => {
+export const editModal = (rule: CronRule, current?: number): OpenModalEdit => {
     return {
         type: OPEN_MODAL_EDIT,
         rule,
@@ -494,17 +544,15 @@ export const updateWeekSetting = (day: number, availability: boolean): UpdateWee
 export const editModalReducer = combineReducers<EditModalState, EditModalAction>({
     name,
     url,
-    period,
     mode,
     active,
     targetId,
     deleteFlag,
-    startTime,
-    endTime,
     current,
     oneTime,
     skipInfo,
     isSkipInfoActive,
+    clockConfig,
     weekSetting,
     isWeekSettingActive,
 });

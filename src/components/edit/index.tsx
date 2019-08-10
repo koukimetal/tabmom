@@ -33,6 +33,9 @@ import {
     deleteRule,
     deleteCurrent,
     updateCurrent as systemUpdateCurrent,
+    TimeRangeType,
+    ClockConfig,
+    isNeedPeriod,
 } from '../system/actions';
 import { Save as SaveIcon, Delete as DeleteIcon, Close as CloseIcon } from '@material-ui/icons';
 import { EditSkipInfo } from './skip_info';
@@ -128,21 +131,31 @@ class EditModalInner extends React.Component<Props> {
         event.preventDefault();
 
         const { edit } = this.props;
-        const periodNum = parseInt(edit.period);
-        const createNew = edit.targetId === null;
 
+        const createNew = edit.targetId === null;
         const id = createNew ? uuidV1() : edit.targetId;
-        const startTime = this.convertTimeToNumber(edit.startTime);
-        const endTime = this.convertTimeToNumber(edit.endTime);
+
+        const clockConfig: ClockConfig = {
+            type: edit.clockConfig.type,
+        };
+
+        if (edit.clockConfig.type === TimeRangeType.ALL) {
+            clockConfig.period = parseInt(edit.clockConfig.period);
+        } else if (edit.clockConfig.type === TimeRangeType.ONCE) {
+            clockConfig.startTime = this.convertTimeToNumber(edit.clockConfig.startTime);
+        } else if (edit.clockConfig.type === TimeRangeType.MANY) {
+            clockConfig.period = parseInt(edit.clockConfig.period);
+            clockConfig.startTime = this.convertTimeToNumber(edit.clockConfig.startTime);
+            clockConfig.endTime = this.convertTimeToNumber(edit.clockConfig.endTime);
+        }
+
         const rule: CronRule = {
             id,
             name: edit.name,
-            period: periodNum,
             active: edit.active,
             url: edit.url,
             oneTime: edit.oneTime,
-            startTime,
-            endTime,
+            clockConfig,
         };
 
         if (edit.isSkipInfoActive) {
@@ -153,12 +166,20 @@ class EditModalInner extends React.Component<Props> {
             rule.weekSetting = [...edit.weekSetting];
         }
 
+        const needPeriod = isNeedPeriod(clockConfig.type);
+
         if (createNew) {
-            this.props.systemUpdateCurrent(id, periodNum);
+            if (needPeriod) {
+                this.props.systemUpdateCurrent(id, rule.clockConfig.period);
+            }
             this.props.addRule(rule);
         } else {
-            const currentNum = parseInt(edit.current);
-            this.props.systemUpdateCurrent(id, currentNum);
+            if (needPeriod) {
+                const currentNum = parseInt(edit.current);
+                this.props.systemUpdateCurrent(id, currentNum);
+            } else {
+                this.props.deleteCurrent(id);
+            }
             this.props.updateRule(rule);
         }
         this.props.closeModal();
@@ -332,20 +353,45 @@ class EditModalInner extends React.Component<Props> {
 }
 
 const validator = (editState: EditModalState) => {
-    if (!isValidTime(editState.startTime) || !isValidTime(editState.endTime)) {
-        return false;
-    }
-    // FYI: parseInt("12a") is 12
-    if (editState.mode === ModalMode.CREATE) {
-        const period = parseInt(editState.period);
-        return Number.isInteger(period) && period > 0;
-    } else if (editState.mode === ModalMode.EDIT) {
-        const period = parseInt(editState.period);
-        const current = parseInt(editState.current);
-        return Number.isInteger(period) && period > 0 && Number.isInteger(current) && current > 0;
+    let verifyPeriod = false;
+    if (editState.clockConfig.type === TimeRangeType.ONCE) {
+        verifyPeriod = true;
     } else {
-        return false;
+        // ALL or ANY
+        const period = parseInt(editState.clockConfig.period);
+        verifyPeriod = Number.isInteger(period) && period > 0;
     }
+
+    let verifyCurrent = false;
+    if (editState.clockConfig.type === TimeRangeType.ONCE) {
+        verifyCurrent = true;
+    } else {
+        // ALL or ANY
+        if (editState.mode === ModalMode.CREATE) {
+            verifyCurrent = true;
+        } else {
+            const current = parseInt(editState.current);
+            verifyCurrent = Number.isInteger(current) && current > 0;
+        }
+    }
+
+    let verifyStartTime = false;
+    if (editState.clockConfig.type === TimeRangeType.ALL) {
+        verifyStartTime = true;
+    } else {
+        // MANY, ONCE
+        verifyStartTime = isValidTime(editState.clockConfig.startTime);
+    }
+
+    let verifyEndTime = false;
+    if (editState.clockConfig.type === TimeRangeType.ALL || editState.clockConfig.type === TimeRangeType.ONCE) {
+        verifyEndTime = true;
+    } else {
+        // MANY
+        verifyEndTime = isValidTime(editState.clockConfig.endTime);
+    }
+
+    return verifyPeriod && verifyCurrent && verifyStartTime && verifyEndTime;
 };
 
 const mapStateToProps = (state: AppState) => ({

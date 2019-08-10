@@ -1,4 +1,4 @@
-import { CronRule } from './components/system/actions';
+import { CronRule, TimeRangeType } from './components/system/actions';
 import { calculateNowMinutes } from './shared';
 import {
     getRule,
@@ -14,10 +14,14 @@ import {
 } from './proxy';
 const main = () => {
     chrome.alarms.create('MINUTE', { periodInMinutes: 1 });
+    let previousMinutes: number = null;
     chrome.alarms.onAlarm.addListener(async alarm => {
         if (alarm.name === 'MINUTE') {
             const now = new Date();
             const nowMinutes = calculateNowMinutes(now);
+            if (!previousMinutes) {
+                previousMinutes = nowMinutes - 1;
+            }
             const nowDay = now.getDay();
             const allTabs = await getAllTabs();
             const ruleOrder = (await getRuleOrder()) || [];
@@ -31,11 +35,7 @@ const main = () => {
             };
             chrome.runtime.sendMessage(updateNowDateMessage);
 
-            const shouldOpen = (rule: CronRule) => {
-                if (nowMinutes < rule.startTime || rule.endTime < nowMinutes) {
-                    return false;
-                }
-
+            const isSatisfyOptions = (rule: CronRule) => {
                 const { skipInfo, weekSetting } = rule;
 
                 if (weekSetting) {
@@ -63,8 +63,32 @@ const main = () => {
                         return;
                     }
 
-                    let time = (await getCurrentTime(rule.id)) || rule.period;
-                    if (time <= 1) {
+                    const { clockConfig } = rule;
+                    let shouldOpen = false;
+                    let nextCurrent: number = null;
+                    if (clockConfig.type === TimeRangeType.ONCE) {
+                        const minutes = clockConfig.startTime;
+                        const isFitTime = previousMinutes < minutes && minutes <= nowMinutes;
+                        shouldOpen = isFitTime && isSatisfyOptions(rule);
+                    } else if (clockConfig.type === TimeRangeType.ALL || rule.clockConfig.type === TimeRangeType.MANY) {
+                        const current = (await getCurrentTime(rule.id)) || clockConfig.period;
+                        nextCurrent = current <= 1 ? clockConfig.period : current - 1;
+                        if (clockConfig.type === TimeRangeType.ALL) {
+                            shouldOpen = isSatisfyOptions(rule) && current <= 1;
+                        } else {
+                            // MANY
+                            const inRange = clockConfig.startTime <= nowMinutes && nowMinutes <= clockConfig.endTime;
+                            shouldOpen = isSatisfyOptions(rule) && inRange && current <= 1;
+                        }
+                    }
+
+                    if (nextCurrent) {
+                        await setCurrentTime(rule.id, nextCurrent);
+                        const message: TimerMessage = { type: MessageType.TIMER, id: rule.id, time: nextCurrent };
+                        chrome.runtime.sendMessage(message);
+                    }
+
+                    if (shouldOpen) {
                         if (rule.oneTime) {
                             const nextRule = Object.assign({}, rule, { active: false });
                             const message: UpdateRuleMessage = {
@@ -74,16 +98,10 @@ const main = () => {
                             await setRule(nextRule);
                             chrome.runtime.sendMessage(message);
                         }
-                        time = rule.period;
-                        if (shouldOpen(rule)) {
-                            chrome.tabs.create({ url: rule.url });
-                        }
-                    } else {
-                        time--;
+                        chrome.tabs.create({ url: rule.url });
                     }
-                    await setCurrentTime(rule.id, time);
-                    const message: TimerMessage = { type: MessageType.TIMER, id: rule.id, time };
-                    chrome.runtime.sendMessage(message);
+
+                    previousMinutes = nowMinutes;
                 }),
             );
         }

@@ -1,4 +1,5 @@
 import { CronRule, SystemDate } from './components/system/actions';
+import { convertToLatest } from './components/system/backward_compatibility';
 
 const RULE_ORDER_KEY = 'rule_order';
 const RULE_PREFIX = 'RULE_';
@@ -21,7 +22,7 @@ export const getRule = (id: string) =>
     new Promise<CronRule>(resolve => {
         const key = RULE_PREFIX + id;
         chrome.storage.local.get([key], values => {
-            resolve(values[key]);
+            resolve(convertToLatest(values[key]));
         });
     });
 

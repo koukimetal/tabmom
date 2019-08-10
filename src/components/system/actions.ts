@@ -12,15 +12,30 @@ export interface SkipInfo {
     match: string;
 }
 
+export enum TimeRangeType {
+    ONCE = 'ONCE',
+    MANY = 'MANY',
+    ALL = 'ALL',
+}
+
+export interface ClockConfig {
+    type: TimeRangeType;
+    period?: number;
+    startTime?: number;
+    endTime?: number;
+}
+
+export const isNeedPeriod = (type: TimeRangeType) => {
+    return type === TimeRangeType.ALL || type === TimeRangeType.MANY;
+};
+
 export interface CronRule {
     id: string;
     url: string;
     name: string;
-    period: number;
     active: boolean;
     oneTime: boolean;
-    startTime: number;
-    endTime: number;
+    clockConfig: ClockConfig;
     skipInfo?: SkipInfo;
     weekSetting?: boolean[];
 }
