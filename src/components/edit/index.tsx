@@ -37,7 +37,7 @@ import {
     ClockConfig,
     isNeedPeriod,
 } from '../system/actions';
-import { Save as SaveIcon, Delete as DeleteIcon, Close as CloseIcon } from '@material-ui/icons';
+import { Save as SaveIcon, Delete as DeleteIcon, Close as CloseIcon, FileCopy as CopyIcon } from '@material-ui/icons';
 import { EditSkipInfo } from './skip_info';
 import { EditModalPeriod } from './period';
 import * as uuidV1 from 'uuid/v1';
@@ -127,12 +127,10 @@ class EditModalInner extends React.Component<Props> {
         return hour * 60 + min;
     };
 
-    private save = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-
+    private saveInner = (copy = false) => {
         const { edit } = this.props;
 
-        const createNew = edit.targetId === null;
+        const createNew = edit.targetId === null || copy;
         const id = createNew ? uuidV1() : edit.targetId;
 
         const clockConfig: ClockConfig = {
@@ -183,6 +181,15 @@ class EditModalInner extends React.Component<Props> {
             this.props.updateRule(rule);
         }
         this.props.closeModal();
+    };
+
+    private save = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        this.saveInner();
+    };
+
+    private copy = () => {
+        this.saveInner(true);
     };
 
     private delete = () => {
@@ -341,6 +348,16 @@ class EditModalInner extends React.Component<Props> {
                                             }
                                             label=""
                                         />
+                                        <Button
+                                            variant="outlined"
+                                            color="primary"
+                                            className={classes.button}
+                                            disabled={!validInput}
+                                            onClick={this.copy}
+                                        >
+                                            <CopyIcon />
+                                            Copy
+                                        </Button>
                                     </>
                                 )}
                             </div>
