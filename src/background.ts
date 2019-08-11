@@ -19,7 +19,7 @@ const main = () => {
         if (alarm.name === 'MINUTE') {
             const now = new Date();
             const nowMinutes = calculateNowMinutes(now);
-            if (!previousMinutes) {
+            if (previousMinutes === null || previousMinutes > nowMinutes) {
                 previousMinutes = nowMinutes - 1;
             }
             const nowDay = now.getDay();

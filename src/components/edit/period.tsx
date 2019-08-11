@@ -10,7 +10,7 @@ import {
     updateCurrent as editUpdateCurrent,
     updateTimeRangeType,
 } from './actions';
-import { TextField, Theme, createStyles, WithStyles, Select } from '@material-ui/core';
+import { TextField, Theme, createStyles, WithStyles, Select, Typography } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
 import { TimeRangeType } from '../system/actions';
 
@@ -23,6 +23,9 @@ const styles = (theme: Theme) =>
         },
         typeOptions: {
             marginLeft: 5,
+        },
+        modeText: {
+            marginRight: 5,
         },
     });
 
@@ -132,6 +135,9 @@ class EditModalPeriodInner extends React.Component<Props> {
         return (
             <>
                 <div className={classes.typeOptions}>
+                    <Typography variant="subtitle1" component="span" className={classes.modeText}>
+                        Mode for a day:
+                    </Typography>
                     <Select
                         native
                         value={edit.clockConfig.type}

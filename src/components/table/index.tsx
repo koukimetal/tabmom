@@ -111,7 +111,7 @@ const TimeDisplay: React.SFC<{
     const { rule, system } = props;
     if (rule.clockConfig.type === TimeRangeType.ALL || rule.clockConfig.type === TimeRangeType.MANY) {
         const current = system.current[rule.id] || rule.clockConfig.period;
-        return <>{current.toString() + ' / ' + rule.clockConfig.period.toString()} +</>;
+        return <>{current.toString() + ' / ' + rule.clockConfig.period.toString()}</>;
     } else {
         // ONCE
         return <>{convertNumbetToTime(rule.clockConfig.startTime)}</>;
