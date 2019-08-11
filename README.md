@@ -9,3 +9,6 @@ I use this to force me to open the mail page every 30 mins.
 `yarn build` or `npm run build`. It will generate a `dist` directory.
 
 Go to `chrome://extensions/` and click "Load unpacked" and upload the dist file.
+
+## Get from Chrome Web Store
+https://chrome.google.com/webstore/detail/tab-mom/hmemlmeocpcgjbeahcblhdeejcplehad

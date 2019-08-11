@@ -29,7 +29,6 @@ module.exports = {
     plugins: [new CopyPlugin([
         { from: 'src/popup.html', to: 'popup.html' },
         { from: 'src/manifest.json', to: 'manifest.json'},
-        { from: 'src/tabmom.png', to: 'tabmom.png'}
+        { from: 'src/icons', to: 'icons' },
     ])]
 };
-

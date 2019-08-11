@@ -1,7 +1,7 @@
 {
   "name": "tabmom",
-  "version": "1.0.0",
-  "description": "ok solution",
+  "version": "0.1.0.1",
+  "description": "A chrome extension to periodically open tabs",
   "main": "index.js",
   "author": "keitak",
   "license": "MIT",
