@@ -136,7 +136,7 @@ class EditModalInner extends React.Component<Props> {
 
         if (edit.clockConfig.type === TimeRangeType.ALL) {
             clockConfig = Object.assign({}, clockConfig, {
-                perios: parseInt(edit.clockConfig.period),
+                period: parseInt(edit.clockConfig.period),
             });
         } else if (edit.clockConfig.type === TimeRangeType.ONCE) {
             clockConfig = Object.assign({}, clockConfig, {

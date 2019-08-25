@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { AppState } from 'components/store';
-import { convertNumbetToTime } from '../shared';
 import {
     Theme,
     createStyles,
@@ -16,14 +15,11 @@ import {
     Link,
 } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
-import { SystemState, CronRule, swapRule, TimeRangeType, SystemDate } from '../system/actions';
+import { SystemState, CronRule, swapRule, TimeRangeType } from '../system/actions';
 import { editModal } from '../edit/actions';
-import {
-    Edit as EditIcon,
-    HighlightOff as OffIcon,
-    ArrowUpward as UpIcon,
-    ArrowDownward as DownIcon,
-} from '@material-ui/icons';
+import { Edit as EditIcon, ArrowUpward as UpIcon, ArrowDownward as DownIcon } from '@material-ui/icons';
+import { ActiveWrapper } from './active_wrapper';
+import { TimeDisplay } from './time_display';
 
 const styles = (theme: Theme) =>
     createStyles({
@@ -65,58 +61,6 @@ interface StateProps {
 }
 
 interface Props extends DispatchProps, StateProps, WithStyles<typeof styles> {}
-
-const ActiveWrapper: React.SFC<{
-    rule: CronRule;
-    nowDate: SystemDate;
-}> = props => {
-    const { rule, nowDate } = props;
-    const { nowMinutes, nowDay } = nowDate;
-
-    if (!rule.active) {
-        return <OffIcon />;
-    }
-
-    let wrapFront = '';
-    let wrapBack = '';
-
-    if (
-        (rule.weekSetting && !rule.weekSetting[nowDay]) ||
-        (rule.clockConfig.type === TimeRangeType.MANY &&
-            (nowMinutes < rule.clockConfig.startTime || rule.clockConfig.endTime < nowMinutes)) ||
-        (rule.clockConfig.type === TimeRangeType.ONCE && nowMinutes >= rule.clockConfig.startTime)
-    ) {
-        wrapFront = '(';
-        wrapBack = ')';
-    }
-
-    if (rule.oneTime) {
-        wrapFront += '*';
-    }
-
-    return (
-        <>
-            {wrapFront}
-            {props.children}
-            {wrapBack}
-        </>
-    );
-};
-
-const TimeDisplay: React.SFC<{
-    system: SystemState;
-    rule: CronRule;
-    nowDate: SystemDate;
-}> = props => {
-    const { rule, system } = props;
-    if (rule.clockConfig.type === TimeRangeType.ALL || rule.clockConfig.type === TimeRangeType.MANY) {
-        const current = system.current[rule.id] || rule.clockConfig.period;
-        return <>{current.toString() + ' / ' + rule.clockConfig.period.toString()}</>;
-    } else {
-        // ONCE
-        return <>{convertNumbetToTime(rule.clockConfig.startTime)}</>;
-    }
-};
 
 class RuleTableInner extends React.Component<Props> {
     private clickEdit = (id: string) => {
