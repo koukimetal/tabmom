@@ -135,19 +135,22 @@ class EditModalInner extends React.Component<Props> {
         };
 
         if (edit.clockConfig.type === TimeRangeType.ALL) {
-            clockConfig = Object.assign({}, clockConfig, {
+            const update: Partial<ClockConfig> = {
                 period: parseInt(edit.clockConfig.period),
-            });
+            };
+            clockConfig = Object.assign({}, clockConfig, update);
         } else if (edit.clockConfig.type === TimeRangeType.ONCE) {
-            clockConfig = Object.assign({}, clockConfig, {
+            const update: Partial<ClockConfig> = {
                 startTime: this.convertTimeToNumber(edit.clockConfig.startTime),
-            });
+            };
+            clockConfig = Object.assign({}, clockConfig, update);
         } else if (edit.clockConfig.type === TimeRangeType.MANY) {
-            clockConfig = Object.assign({}, clockConfig, {
+            const update: Partial<ClockConfig> = {
                 period: parseInt(edit.clockConfig.period),
                 startTime: this.convertTimeToNumber(edit.clockConfig.startTime),
                 endTime: this.convertTimeToNumber(edit.clockConfig.endTime),
-            });
+            };
+            clockConfig = Object.assign({}, clockConfig, update);
         }
 
         return clockConfig;
