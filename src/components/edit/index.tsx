@@ -127,27 +127,36 @@ class EditModalInner extends React.Component<Props> {
         return hour * 60 + min;
     };
 
-    private saveInner = (copy = false) => {
+    private getClockConfig = () => {
         const { edit } = this.props;
 
-        const createNew = edit.targetId === null || copy;
-        const id = createNew ? uuidV1() : edit.targetId;
-
-        const clockConfig: ClockConfig = {
+        let clockConfig: ClockConfig = {
             type: edit.clockConfig.type,
         };
 
         if (edit.clockConfig.type === TimeRangeType.ALL) {
-            clockConfig.period = parseInt(edit.clockConfig.period);
+            clockConfig = Object.assign({}, clockConfig, {
+                perios: parseInt(edit.clockConfig.period),
+            });
         } else if (edit.clockConfig.type === TimeRangeType.ONCE) {
-            clockConfig.startTime = this.convertTimeToNumber(edit.clockConfig.startTime);
+            clockConfig = Object.assign({}, clockConfig, {
+                startTime: this.convertTimeToNumber(edit.clockConfig.startTime),
+            });
         } else if (edit.clockConfig.type === TimeRangeType.MANY) {
-            clockConfig.period = parseInt(edit.clockConfig.period);
-            clockConfig.startTime = this.convertTimeToNumber(edit.clockConfig.startTime);
-            clockConfig.endTime = this.convertTimeToNumber(edit.clockConfig.endTime);
+            clockConfig = Object.assign({}, clockConfig, {
+                period: parseInt(edit.clockConfig.period),
+                startTime: this.convertTimeToNumber(edit.clockConfig.startTime),
+                endTime: this.convertTimeToNumber(edit.clockConfig.endTime),
+            });
         }
 
-        const rule: CronRule = {
+        return clockConfig;
+    };
+
+    private getRule = (id: string) => {
+        const { edit } = this.props;
+        const clockConfig = this.getClockConfig();
+        let rule: CronRule = {
             id,
             name: edit.name,
             active: edit.active,
@@ -157,14 +166,25 @@ class EditModalInner extends React.Component<Props> {
         };
 
         if (edit.isSkipInfoActive) {
-            rule.skipInfo = { ...edit.skipInfo };
+            rule = Object.assign({}, rule, { skipInfo: { ...edit.skipInfo } });
         }
 
         if (edit.isWeekSettingActive) {
-            rule.weekSetting = [...edit.weekSetting];
+            rule = Object.assign({}, rule, { weekSetting: [...edit.weekSetting] });
         }
 
-        const needPeriod = isNeedPeriod(clockConfig.type);
+        return rule;
+    };
+
+    private saveInner = (copy = false) => {
+        const { edit } = this.props;
+
+        const createNew = edit.targetId === null || copy;
+        const id = createNew ? uuidV1() : edit.targetId;
+
+        const rule = this.getRule(id);
+
+        const needPeriod = isNeedPeriod(rule.clockConfig.type);
 
         if (createNew) {
             if (needPeriod) {

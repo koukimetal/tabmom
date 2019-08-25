@@ -19,10 +19,10 @@ export enum TimeRangeType {
 }
 
 export interface ClockConfig {
-    type: TimeRangeType;
-    period?: number;
-    startTime?: number;
-    endTime?: number;
+    readonly type: TimeRangeType;
+    readonly period?: number;
+    readonly startTime?: number;
+    readonly endTime?: number;
 }
 
 export const isNeedPeriod = (type: TimeRangeType) => {
@@ -30,14 +30,14 @@ export const isNeedPeriod = (type: TimeRangeType) => {
 };
 
 export interface CronRule {
-    id: string;
-    url: string;
-    name: string;
-    active: boolean;
-    oneTime: boolean;
-    clockConfig: ClockConfig;
-    skipInfo?: SkipInfo;
-    weekSetting?: boolean[];
+    readonly id: string;
+    readonly url: string;
+    readonly name: string;
+    readonly active: boolean;
+    readonly oneTime: boolean;
+    readonly clockConfig: ClockConfig;
+    readonly skipInfo?: SkipInfo;
+    readonly weekSetting?: boolean[];
 }
 
 interface AddRule {
