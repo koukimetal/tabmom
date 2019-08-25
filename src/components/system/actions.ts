@@ -74,8 +74,8 @@ interface UpdateCurrent {
 
 // Looks like we can't send raw Date class on Message
 export interface SystemDate {
-    nowMinutes: number;
-    nowDay: number;
+    readonly nowMinutes: number;
+    readonly nowDay: number;
 }
 
 interface SetNowDate {
