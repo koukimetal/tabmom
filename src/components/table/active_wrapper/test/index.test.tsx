@@ -42,4 +42,28 @@ describe('<ActiveWrapper />', () => {
         const wrapper = shallow(<ActiveWrapper rule={rule} nowDate={systemDateBase} />);
         expect(wrapper.contains(<OffIcon />)).toBe(true);
     });
+
+    test('Test range', () => {
+        const rule = Object.assign({}, ruleBase, {
+            weekSetting: weekSettingBase,
+            clockConfig: {
+                type: TimeRangeType.MANY,
+                startTime: 20, endTime: 30
+            },
+        });
+        const wrapper = shallow(<ActiveWrapper rule={rule} nowDate={systemDateBase} />);
+        expect(/\(.*\)/.test(wrapper.text())).toBe(true);
+    });
+
+    test('Test Once', () => {
+        const rule = Object.assign({}, ruleBase, {
+            weekSetting: weekSettingBase,
+            clockConfig: {
+                type: TimeRangeType.MANY,
+                startTime: 20
+            },
+        });
+        const wrapper = shallow(<ActiveWrapper rule={rule} nowDate={systemDateBase} />);
+        expect(/\(.*\)/.test(wrapper.text())).toBe(true);
+    });
 });
