@@ -2,7 +2,7 @@ import * as React from 'react';
 import { shallow } from 'enzyme';
 import { CronRule, TimeRangeType, SystemDate } from "../../../system/actions";
 import { ActiveWrapper } from "..";
-
+import { HighlightOff as OffIcon } from '@material-ui/icons';
 
 describe('<ActiveWrapper />', () => {
 
@@ -33,5 +33,13 @@ describe('<ActiveWrapper />', () => {
         });
         const wrapper = shallow(<ActiveWrapper rule={rule} nowDate={systemDateBase} />);
         expect(/\(.*\)/.test(wrapper.text())).toBe(true);
+    });
+
+    test('Test inactive', () => {
+        const rule = Object.assign({}, ruleBase, {
+            active: false
+        });
+        const wrapper = shallow(<ActiveWrapper rule={rule} nowDate={systemDateBase} />);
+        expect(wrapper.contains(<OffIcon />)).toBe(true);
     });
 });
