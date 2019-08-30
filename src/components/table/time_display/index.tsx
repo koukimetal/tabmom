@@ -1,18 +1,17 @@
 import * as React from 'react';
-import { convertNumbetToTime } from '../../shared';
-import { SystemState, CronRule, TimeRangeType, SystemDate } from '../../system/actions';
+import * as shared from '../../shared';
+import { CronRule, TimeRangeType, CurrentMap } from '../../system/actions';
 
 export const TimeDisplay: React.SFC<{
-    system: SystemState;
+    currentMap: CurrentMap;
     rule: CronRule;
-    nowDate: SystemDate;
 }> = props => {
-    const { rule, system } = props;
+    const { rule, currentMap } = props;
     if (rule.clockConfig.type === TimeRangeType.ALL || rule.clockConfig.type === TimeRangeType.MANY) {
-        const current = system.current[rule.id] || rule.clockConfig.period;
+        const current = currentMap[rule.id] || rule.clockConfig.period;
         return <>{current.toString() + ' / ' + rule.clockConfig.period.toString()}</>;
     } else {
         // ONCE
-        return <>{convertNumbetToTime(rule.clockConfig.startTime)}</>;
+        return <>{shared.convertNumbetToTime(rule.clockConfig.startTime)}</>;
     }
 };
