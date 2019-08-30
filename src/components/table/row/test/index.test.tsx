@@ -51,7 +51,16 @@ describe('<RuleTableRow>', () => {
         addARule(d2); // middle
         addARule(d1); // top
         // todo test d1, d2, d3 and count up and down button
-        const wrapper = shallow(<RuleTableRowInner id={'d1'} idx={0} system={systemBase} editModal={editModal} swapRule={swapRule} classes={classes}/>);
-        // expect(wrapper).toMatchSnapshot();
+        const wd1 = shallow(<RuleTableRowInner id={'d1'} idx={0} system={systemBase} editModal={editModal} swapRule={swapRule} classes={classes}/>);
+        expect(wd1.find('[data-test-id="swapUp"]')).toHaveLength(0);
+        expect(wd1.find('[data-test-id="swapDown"]')).toHaveLength(1);
+        const wd2 = shallow(<RuleTableRowInner id={'d2'} idx={1} system={systemBase} editModal={editModal} swapRule={swapRule} classes={classes}/>);
+        expect(wd2.find('[data-test-id="swapUp"]')).toHaveLength(1);
+        expect(wd2.find('[data-test-id="swapDown"]')).toHaveLength(1);
+        const wd3 = shallow(<RuleTableRowInner id={'d3'} idx={2} system={systemBase} editModal={editModal} swapRule={swapRule} classes={classes}/>);
+        expect(wd3.find('[data-test-id="swapUp"]')).toHaveLength(1);
+        expect(wd3.find('[data-test-id="swapDown"]')).toHaveLength(0);
+
+
     });
 });

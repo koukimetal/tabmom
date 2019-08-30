@@ -86,12 +86,12 @@ export class RuleTableRowInner extends React.Component<Props> {
                 </TableCell>
                 <TableCell className={classes.cell}>
                     {idx > 0 && (
-                        <IconButton aria-label="edit" size="small" onClick={this.swapUp}>
+                        <IconButton aria-label="edit" size="small" onClick={this.swapUp} data-test-id="swapUp">
                             <UpIcon fontSize="inherit" />
                         </IconButton>
                     )}
                     {idx < system.ruleOrder.length - 1 && (
-                        <IconButton aria-label="edit" size="small" onClick={this.swapDown}>
+                        <IconButton aria-label="edit" size="small" onClick={this.swapDown} data-test-id="swapDown">
                             <DownIcon fontSize="inherit" />
                         </IconButton>
                     )}
