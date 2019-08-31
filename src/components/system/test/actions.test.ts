@@ -28,6 +28,7 @@ describe('test for System', () => {
                 oneTime: false,
                 clockConfig: {
                     type: TimeRangeType.ALL,
+                    period: 10,
                 },
             });
         }

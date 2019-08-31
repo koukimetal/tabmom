@@ -18,6 +18,7 @@ describe('<ActiveWrapper />', () => {
             oneTime: false,
             clockConfig: {
                 type: TimeRangeType.ALL,
+                period: 10,
             },
         };
         weekSettingBase = new Array<boolean>(7).fill(false);

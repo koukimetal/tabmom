@@ -46,13 +46,13 @@ export const App: React.SFC<AppProps> = props => {
             setRuleOrder(store.getState().system.ruleOrder);
             setRule(lastAction.rule);
             const { clockConfig } = lastAction.rule;
-            if (isNeedPeriod(clockConfig.type)) {
+            if (isNeedPeriod(clockConfig)) {
                 setCurrentTime(lastAction.rule.id, clockConfig.period);
             }
         } else if (lastAction.type === SYSTEM_UPDATE_RULE) {
             setRule(lastAction.rule);
             const { clockConfig } = lastAction.rule;
-            if (!isNeedPeriod(clockConfig.type)) {
+            if (!isNeedPeriod(clockConfig)) {
                 deleteCurrentTime(lastAction.rule.id);
             }
         } else if (lastAction.type === SYSTEM_DELETE_RULE) {

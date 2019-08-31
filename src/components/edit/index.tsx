@@ -130,27 +130,25 @@ class EditModalInner extends React.Component<Props> {
     private getClockConfig = () => {
         const { edit } = this.props;
 
-        let clockConfig: ClockConfig = {
-            type: edit.clockConfig.type,
-        };
+        let clockConfig: ClockConfig;
 
         if (edit.clockConfig.type === TimeRangeType.ALL) {
-            const update: Partial<ClockConfig> = {
+            clockConfig = {
+                type: edit.clockConfig.type,
                 period: parseInt(edit.clockConfig.period),
             };
-            clockConfig = Object.assign({}, clockConfig, update);
         } else if (edit.clockConfig.type === TimeRangeType.ONCE) {
-            const update: Partial<ClockConfig> = {
+            clockConfig = {
+                type: edit.clockConfig.type,
                 startTime: this.convertTimeToNumber(edit.clockConfig.startTime),
             };
-            clockConfig = Object.assign({}, clockConfig, update);
         } else if (edit.clockConfig.type === TimeRangeType.MANY) {
-            const update: Partial<ClockConfig> = {
+            clockConfig = {
+                type: edit.clockConfig.type,
                 period: parseInt(edit.clockConfig.period),
                 startTime: this.convertTimeToNumber(edit.clockConfig.startTime),
                 endTime: this.convertTimeToNumber(edit.clockConfig.endTime),
             };
-            clockConfig = Object.assign({}, clockConfig, update);
         }
 
         return clockConfig;
@@ -187,15 +185,13 @@ class EditModalInner extends React.Component<Props> {
 
         const rule = this.getRule(id);
 
-        const needPeriod = isNeedPeriod(rule.clockConfig.type);
-
         if (createNew) {
-            if (needPeriod) {
+            if (isNeedPeriod(rule.clockConfig)) {
                 this.props.systemUpdateCurrent(id, rule.clockConfig.period);
             }
             this.props.addRule(rule);
         } else {
-            if (needPeriod) {
+            if (isNeedPeriod(rule.clockConfig)) {
                 const currentNum = parseInt(edit.current);
                 this.props.systemUpdateCurrent(id, currentNum);
             } else {

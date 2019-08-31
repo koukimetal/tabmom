@@ -70,7 +70,7 @@ export class RuleTableRowInner extends React.Component<Props> {
         return (
             <TableRow>
                 <TableCell className={classes.cell}>
-                    <IconButton aria-label="edit" size="small" onClick={this.clickEdit}>
+                    <IconButton aria-label="edit" size="small" onClick={this.clickEdit} data-test-tag="edit">
                         <EditIcon fontSize="inherit" />
                     </IconButton>
                 </TableCell>
@@ -86,12 +86,12 @@ export class RuleTableRowInner extends React.Component<Props> {
                 </TableCell>
                 <TableCell className={classes.cell}>
                     {idx > 0 && (
-                        <IconButton aria-label="edit" size="small" onClick={this.swapUp} data-test-id="swapUp">
+                        <IconButton aria-label="edit" size="small" onClick={this.swapUp} data-test-tag="swapUp">
                             <UpIcon fontSize="inherit" />
                         </IconButton>
                     )}
                     {idx < system.ruleOrder.length - 1 && (
-                        <IconButton aria-label="edit" size="small" onClick={this.swapDown} data-test-id="swapDown">
+                        <IconButton aria-label="edit" size="small" onClick={this.swapDown} data-test-tag="swapDown">
                             <DownIcon fontSize="inherit" />
                         </IconButton>
                     )}

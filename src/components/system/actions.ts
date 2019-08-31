@@ -18,15 +18,27 @@ export enum TimeRangeType {
     ALL = 'ALL',
 }
 
-export interface ClockConfig {
-    readonly type: TimeRangeType;
-    readonly period?: number;
-    readonly startTime?: number;
-    readonly endTime?: number;
+export interface ClockConfigAll {
+    readonly type: TimeRangeType.ALL;
+    readonly period: number;
 }
 
-export const isNeedPeriod = (type: TimeRangeType) => {
-    return type === TimeRangeType.ALL || type === TimeRangeType.MANY;
+export interface ClockConfigMany {
+    readonly type: TimeRangeType.MANY;
+    readonly period: number;
+    readonly startTime: number;
+    readonly endTime: number;
+}
+
+export interface ClockConfigOnce {
+    readonly type: TimeRangeType.ONCE;
+    readonly startTime: number;
+}
+
+export type ClockConfig = ClockConfigAll | ClockConfigMany | ClockConfigOnce;
+
+export const isNeedPeriod = (config: ClockConfig): config is ClockConfigAll | ClockConfigMany => {
+    return config.type === TimeRangeType.ALL || config.type === TimeRangeType.MANY;
 };
 
 export interface CronRule {
