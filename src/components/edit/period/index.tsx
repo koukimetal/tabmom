@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { AppState } from '../store';
+import { AppState } from '../../store';
 import {
     EditModalState,
     updatePeriod,
@@ -9,10 +9,10 @@ import {
     updateEndTime,
     updateCurrent as editUpdateCurrent,
     updateTimeRangeType,
-} from './actions';
+} from '../actions';
 import { TextField, Theme, createStyles, WithStyles, Select, Typography } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
-import { TimeRangeType } from '../system/actions';
+import { TimeRangeType } from '../../system/actions';
 
 const styles = (theme: Theme) =>
     createStyles({

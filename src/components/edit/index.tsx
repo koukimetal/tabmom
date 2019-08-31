@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { AppState } from 'components/store';
+import { AppState } from '../store';
 import {
     EditModalState,
     updateName,
@@ -40,6 +40,7 @@ import {
 import { Save as SaveIcon, Delete as DeleteIcon, Close as CloseIcon, FileCopy as CopyIcon } from '@material-ui/icons';
 import { EditSkipInfo } from './skip_info';
 import { EditModalPeriod } from './period';
+import {NameForm} from './base/name';
 import * as uuidV1 from 'uuid/v1';
 
 const styles = (theme: Theme) =>
@@ -270,16 +271,7 @@ class EditModalInner extends React.Component<Props> {
                     <Paper className={classes.root}>
                         <form onSubmit={this.save}>
                             <div className={classes.top}>
-                                <div>
-                                    <TextField
-                                        label="Name"
-                                        className={classes.fullTextField}
-                                        value={edit.name}
-                                        onChange={this.changeName}
-                                        margin="normal"
-                                        fullWidth
-                                    />
-                                </div>
+                                <NameForm />
                                 <div className={classes.close}>
                                     <CloseIcon onClick={this.close} />
                                 </div>
