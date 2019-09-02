@@ -3,9 +3,7 @@ import { connect } from 'react-redux';
 import { AppState } from '../store';
 import {
     EditModalState,
-    updateName,
     closeModal,
-    updateUrl,
     updateActive,
     ModalMode,
     updateOneTime,
@@ -15,7 +13,6 @@ import {
 } from './actions';
 import Modal from '@material-ui/core/Modal';
 import {
-    TextField,
     Theme,
     createStyles,
     WithStyles,
@@ -37,41 +34,24 @@ import {
     ClockConfig,
     isNeedPeriod,
 } from '../system/actions';
-import { Save as SaveIcon, Delete as DeleteIcon, Close as CloseIcon, FileCopy as CopyIcon } from '@material-ui/icons';
+import { Save as SaveIcon, Delete as DeleteIcon, FileCopy as CopyIcon } from '@material-ui/icons';
 import { EditSkipInfo } from './skip_info';
 import { EditModalPeriod } from './period';
-import {NameForm} from './base/name';
 import * as uuidV1 from 'uuid/v1';
+import { BaseForm } from './base';
 
 const styles = (theme: Theme) =>
     createStyles({
         root: {
             padding: theme.spacing(1),
         },
-        textField: {
-            marginLeft: theme.spacing(1),
-            marginRight: theme.spacing(1),
-            width: 200,
-        },
-        fullTextField: {
-            marginLeft: theme.spacing(1),
-            marginRight: theme.spacing(1),
-        },
         button: {
             margin: theme.spacing(1),
-        },
-        top: {
-            display: 'flex',
-        },
-        close: {
-            marginLeft: 'auto',
         },
     });
 
 interface DispatchProps {
-    updateName: typeof updateName;
     closeModal: typeof closeModal;
-    updateUrl: typeof updateUrl;
     updateActive: typeof updateActive;
     addRule: typeof addRule;
     updateRule: typeof updateRule;
@@ -108,12 +88,6 @@ const isValidTime = (time: string) => {
 const DAY_TO_STRING: Readonly<string[]> = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 class EditModalInner extends React.Component<Props> {
-    private changeName = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.props.updateName(event.currentTarget.value);
-    };
-    private changeUrl = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.props.updateUrl(event.currentTarget.value);
-    };
     private toggleActive = () => {
         this.props.updateActive(!this.props.edit.active);
     };
@@ -270,22 +244,7 @@ class EditModalInner extends React.Component<Props> {
                 <>
                     <Paper className={classes.root}>
                         <form onSubmit={this.save}>
-                            <div className={classes.top}>
-                                <NameForm />
-                                <div className={classes.close}>
-                                    <CloseIcon onClick={this.close} />
-                                </div>
-                            </div>
-                            <div>
-                                <TextField
-                                    label="URL"
-                                    className={classes.fullTextField}
-                                    value={edit.url}
-                                    onChange={this.changeUrl}
-                                    margin="normal"
-                                    fullWidth
-                                />
-                            </div>
+                            <BaseForm />
                             <EditModalPeriod />
                             <div>
                                 <FormGroup row>
@@ -430,9 +389,7 @@ const mapStateToProps = (state: AppState) => ({
 export const EditModal = connect<StateProps, DispatchProps>(
     mapStateToProps,
     {
-        updateName,
         closeModal,
-        updateUrl,
         updateActive,
         addRule,
         deleteRule,
