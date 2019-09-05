@@ -12,16 +12,7 @@ import {
     updateWeekSetting,
 } from './actions';
 import Modal from '@material-ui/core/Modal';
-import {
-    Theme,
-    createStyles,
-    WithStyles,
-    Button,
-    Paper,
-    FormGroup,
-    FormControlLabel,
-    Checkbox,
-} from '@material-ui/core';
+import { Theme, createStyles, WithStyles, Button, Paper, FormControlLabel, Checkbox } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
 import {
     CronRule,
@@ -39,6 +30,7 @@ import { EditSkipInfo } from './skip_info';
 import { EditModalPeriod } from './period';
 import * as uuidV1 from 'uuid/v1';
 import { BaseForm } from './base';
+import { ActiveInfo } from './active_info';
 
 const styles = (theme: Theme) =>
     createStyles({
@@ -85,16 +77,7 @@ const isValidTime = (time: string) => {
     return 0 <= hour && hour < 24 && 0 <= min && min < 60;
 };
 
-const DAY_TO_STRING: Readonly<string[]> = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
 class EditModalInner extends React.Component<Props> {
-    private toggleActive = () => {
-        this.props.updateActive(!this.props.edit.active);
-    };
-    private toggleOneTime = () => {
-        this.props.updateOneTime(!this.props.edit.oneTime);
-    };
-
     private convertTimeToNumber = (time: string) => {
         const [sHour, sMin] = time.split(':');
         const hour = parseInt(sHour);
@@ -202,41 +185,6 @@ class EditModalInner extends React.Component<Props> {
         this.props.updateDeleteFlag(!edit.deleteFlag);
     };
 
-    private toggleWeekSettingActive = () => {
-        const { edit } = this.props;
-        this.props.updateIsWeekSettingActive(!edit.isWeekSettingActive);
-    };
-
-    private toggleAWeekSetting = (day: number) => {
-        const { edit } = this.props;
-        this.props.updateWeekSetting(day, !edit.weekSetting[day]);
-    };
-
-    private renderADaySetting = (day: number) => {
-        const { edit } = this.props;
-        const checked = edit.weekSetting[day];
-        return (
-            <FormControlLabel
-                key={day}
-                control={<Checkbox checked={checked} onChange={() => this.toggleAWeekSetting(day)} value={checked} />}
-                label={DAY_TO_STRING[day]}
-            />
-        );
-    };
-
-    private renderWeekSetting = () => {
-        const res: JSX.Element[] = [];
-        for (let day = 0; day < 7; day++) {
-            res.push(this.renderADaySetting(day));
-        }
-
-        return (
-            <div>
-                <FormGroup row>{res}</FormGroup>
-            </div>
-        );
-    };
-
     public render() {
         const { edit, classes, validInput } = this.props;
         return (
@@ -246,41 +194,7 @@ class EditModalInner extends React.Component<Props> {
                         <form onSubmit={this.save}>
                             <BaseForm />
                             <EditModalPeriod />
-                            <div>
-                                <FormGroup row>
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={edit.active}
-                                                onChange={this.toggleActive}
-                                                value={edit.active}
-                                            />
-                                        }
-                                        label="Active"
-                                    />
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={edit.oneTime}
-                                                onChange={this.toggleOneTime}
-                                                value={edit.oneTime}
-                                            />
-                                        }
-                                        label="OneTime"
-                                    />
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={edit.isWeekSettingActive}
-                                                onChange={this.toggleWeekSettingActive}
-                                                value={edit.isWeekSettingActive}
-                                            />
-                                        }
-                                        label="UseWeekSetting"
-                                    />
-                                </FormGroup>
-                            </div>
-                            {edit.isWeekSettingActive && this.renderWeekSetting()}
+                            <ActiveInfo />
                             <EditSkipInfo />
                             <div>
                                 <Button
