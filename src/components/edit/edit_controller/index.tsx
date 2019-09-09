@@ -4,34 +4,26 @@ import { AppState } from '../../store';
 import {
     EditModalState,
     closeModal,
-    updateActive,
     ModalMode,
-    updateOneTime,
-    updateDeleteFlag,
-    updateIsWeekSettingActive,
-    updateWeekSetting,
 } from '../actions';
-import { Theme, createStyles, WithStyles, Button, FormControlLabel, Checkbox } from '@material-ui/core';
+import { Theme, createStyles, WithStyles, Button } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
 import {
     CronRule,
     addRule,
     updateRule,
-    deleteRule,
     deleteCurrent,
     updateCurrent as systemUpdateCurrent,
     TimeRangeType,
     ClockConfig,
     isNeedPeriod,
 } from '../../system/actions';
-import { Save as SaveIcon, Delete as DeleteIcon, FileCopy as CopyIcon } from '@material-ui/icons';
+import { Save as SaveIcon, FileCopy as CopyIcon } from '@material-ui/icons';
 import * as uuidV1 from 'uuid/v1';
+import { EditDelete } from './delete';
 
 const styles = (theme: Theme) =>
     createStyles({
-        root: {
-            padding: theme.spacing(1),
-        },
         button: {
             margin: theme.spacing(1),
         },
@@ -39,16 +31,10 @@ const styles = (theme: Theme) =>
 
 interface DispatchProps {
     closeModal: typeof closeModal;
-    updateActive: typeof updateActive;
     addRule: typeof addRule;
     updateRule: typeof updateRule;
-    deleteRule: typeof deleteRule;
     deleteCurrent: typeof deleteCurrent;
-    updateDeleteFlag: typeof updateDeleteFlag;
     systemUpdateCurrent: typeof systemUpdateCurrent;
-    updateOneTime: typeof updateOneTime;
-    updateIsWeekSettingActive: typeof updateIsWeekSettingActive;
-    updateWeekSetting: typeof updateWeekSetting;
 }
 
 interface StateProps {
@@ -164,18 +150,6 @@ class EditControllerInner extends React.Component<Props> {
         this.saveInner(true);
     };
 
-    private delete = () => {
-        const { edit } = this.props;
-        this.props.deleteRule(edit.targetId);
-        this.props.deleteCurrent(edit.targetId);
-        this.props.closeModal();
-    };
-
-    private toggleDeleteFlag = () => {
-        const { edit } = this.props;
-        this.props.updateDeleteFlag(!edit.deleteFlag);
-    };
-
     public render() {
         const { edit, classes, validInput } = this.props;
         return (
@@ -194,29 +168,7 @@ class EditControllerInner extends React.Component<Props> {
                     </Button>
                     {edit.mode === ModalMode.EDIT && (
                         <>
-                            <Button
-                                variant="contained"
-                                color="secondary"
-                                type="button"
-                                className={classes.button}
-                                onClick={this.delete}
-                                disabled={!edit.deleteFlag}
-                            >
-                                <DeleteIcon />
-                                Delete
-                            </Button>
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={edit.deleteFlag}
-                                        onChange={this.toggleDeleteFlag}
-                                        value={edit.deleteFlag}
-                                        icon={<DeleteIcon />}
-                                        checkedIcon={<DeleteIcon color="secondary" />}
-                                    />
-                                }
-                                label=""
-                            />
+                            <EditDelete />
                             <Button
                                 variant="outlined"
                                 color="primary"
@@ -286,15 +238,9 @@ export const EditController = connect<StateProps, DispatchProps>(
     mapStateToProps,
     {
         closeModal,
-        updateActive,
         addRule,
-        deleteRule,
         updateRule,
         deleteCurrent,
-        updateDeleteFlag,
         systemUpdateCurrent,
-        updateOneTime,
-        updateIsWeekSettingActive,
-        updateWeekSetting,
     },
 )(withStyles(styles)(EditControllerInner));
