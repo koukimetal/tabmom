@@ -145,7 +145,13 @@ export interface ClockConfigEdit {
     endTime?: string;
 }
 
-export interface EditModalState {
+export interface InfoToValidate {
+    mode: ModalMode;
+    clockConfig: ClockConfigEdit;
+    current?: string;
+}
+
+export interface EditModalState extends InfoToValidate {
     name: string;
     url: string;
     active: boolean;

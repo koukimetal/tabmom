@@ -1,11 +1,7 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { AppState } from '../../store';
-import {
-    EditModalState,
-    closeModal,
-    ModalMode,
-} from '../actions';
+import { EditModalState, closeModal, ModalMode } from '../actions';
 import { Theme, createStyles, WithStyles, Button } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
 import {
@@ -21,6 +17,7 @@ import {
 import { Save as SaveIcon, FileCopy as CopyIcon } from '@material-ui/icons';
 import * as uuidV1 from 'uuid/v1';
 import { EditDelete } from './delete';
+import { isValidInput } from './validator';
 
 const styles = (theme: Theme) =>
     createStyles({
@@ -43,20 +40,6 @@ interface StateProps {
 }
 
 interface Props extends DispatchProps, StateProps, WithStyles<typeof styles> {}
-
-const isValidTime = (time: string) => {
-    const [sHour, sMin] = time.split(':');
-    if (!sHour || !sMin) {
-        return false;
-    }
-    const hour = parseInt(sHour);
-    const min = parseInt(sMin);
-    if (!Number.isInteger(hour) || !Number.isInteger(min)) {
-        return false;
-    }
-
-    return 0 <= hour && hour < 24 && 0 <= min && min < 60;
-};
 
 class EditControllerInner extends React.Component<Props> {
     private convertTimeToNumber = (time: string) => {
@@ -187,51 +170,9 @@ class EditControllerInner extends React.Component<Props> {
     }
 }
 
-const validator = (editState: EditModalState) => {
-    let verifyPeriod = false;
-    if (editState.clockConfig.type === TimeRangeType.ONCE) {
-        verifyPeriod = true;
-    } else {
-        // ALL or ANY
-        const period = parseInt(editState.clockConfig.period);
-        verifyPeriod = Number.isInteger(period) && period > 0;
-    }
-
-    let verifyCurrent = false;
-    if (editState.clockConfig.type === TimeRangeType.ONCE) {
-        verifyCurrent = true;
-    } else {
-        // ALL or ANY
-        if (editState.mode === ModalMode.CREATE) {
-            verifyCurrent = true;
-        } else {
-            const current = parseInt(editState.current);
-            verifyCurrent = Number.isInteger(current) && current > 0;
-        }
-    }
-
-    let verifyStartTime = false;
-    if (editState.clockConfig.type === TimeRangeType.ALL) {
-        verifyStartTime = true;
-    } else {
-        // MANY, ONCE
-        verifyStartTime = isValidTime(editState.clockConfig.startTime);
-    }
-
-    let verifyEndTime = false;
-    if (editState.clockConfig.type === TimeRangeType.ALL || editState.clockConfig.type === TimeRangeType.ONCE) {
-        verifyEndTime = true;
-    } else {
-        // MANY
-        verifyEndTime = isValidTime(editState.clockConfig.endTime);
-    }
-
-    return verifyPeriod && verifyCurrent && verifyStartTime && verifyEndTime;
-};
-
 const mapStateToProps = (state: AppState) => ({
     edit: state.edit,
-    validInput: validator(state.edit),
+    validInput: isValidInput(state.edit),
 });
 
 export const EditController = connect<StateProps, DispatchProps>(
