@@ -11,7 +11,7 @@ module.exports = {
     devtool: 'inline-source-map',
     entry: {
         popup: './src/popup.tsx',
-        background: './src/background.ts'
+        background: './src/background.ts',
     },
     context: path.join(__dirname),
     module: {
@@ -26,9 +26,11 @@ module.exports = {
     resolve: {
         extensions: ['.tsx', '.ts', '.js', '.json'],
     },
-    plugins: [new CopyPlugin([
-        { from: 'src/popup.html', to: 'popup.html' },
-        { from: 'src/manifest.json', to: 'manifest.json'},
-        { from: 'src/icons', to: 'icons' },
-    ])]
+    plugins: [
+        new CopyPlugin([
+            { from: 'src/popup.html', to: 'popup.html' },
+            { from: 'src/manifest.json', to: 'manifest.json' },
+            { from: 'src/icons', to: 'icons' },
+        ]),
+    ],
 };

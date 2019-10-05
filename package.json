@@ -11,7 +11,8 @@
     "watch": "webpack --watch --mode=development",
     "test": "jest",
     "lint": "eslint ./src/ --ext .ts,.tsx",
-    "lint:fix": "eslint ./src/ --ext .ts,.tsx --fix"
+    "lint:fix": "eslint ./src/ --ext .ts,.tsx --fix",
+    "lint:config": "eslint ./webpack.config.js ./.prettierrc.js ./jest.config.js ./.eslintrc.js --fix --no-ignore"
   },
   "devDependencies": {
     "@material-ui/core": "^4.1.3",
