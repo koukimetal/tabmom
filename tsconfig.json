@@ -7,9 +7,9 @@
         "jsx": "react",
         "moduleResolution": "node",
         "lib": ["es6", "dom",  "es2017"],
-        "baseUrl": "./src",
+        "baseUrl": "./src"
     },
     "exclude": [
-        "node_modules",
+        "node_modules"
     ]
 }
