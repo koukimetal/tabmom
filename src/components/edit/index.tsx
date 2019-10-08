@@ -39,12 +39,11 @@ class EditModalInner extends React.Component<Props> {
             <Modal open={mode !== ModalMode.CLOSED} onClose={this.close}>
                 <>
                     <Paper className={classes.root}>
-                        <EditController>
-                            <BaseForm />
-                            <EditModalPeriod />
-                            <ActiveInfo />
-                            <EditSkipInfo />
-                        </EditController>
+                        <BaseForm />
+                        <EditModalPeriod />
+                        <ActiveInfo />
+                        <EditSkipInfo />
+                        <EditController />
                     </Paper>
                 </>
             </Modal>

@@ -1,0 +1,69 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Test save copy test getClockConfig 1`] = `
+Object {
+  "period": 1,
+  "type": "ALL",
+}
+`;
+
+exports[`Test save copy test getClockConfig 2`] = `
+Object {
+  "startTime": 0,
+  "type": "ONCE",
+}
+`;
+
+exports[`Test save copy test getClockConfig 3`] = `
+Object {
+  "endTime": 83,
+  "period": 3,
+  "startTime": 0,
+  "type": "MANY",
+}
+`;
+
+exports[`Test save copy test getRule 1`] = `
+Object {
+  "active": undefined,
+  "clockConfig": Object {
+    "endTime": 83,
+    "period": 3,
+    "startTime": 0,
+    "type": "MANY",
+  },
+  "id": "id",
+  "name": undefined,
+  "oneTime": undefined,
+  "skipInfo": Object {
+    "ignorePinned": true,
+    "match": "aaa",
+  },
+  "url": undefined,
+  "weekSetting": Array [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+  ],
+}
+`;
+
+exports[`Test save copy test getRule 2`] = `
+Object {
+  "active": undefined,
+  "clockConfig": Object {
+    "endTime": 83,
+    "period": 3,
+    "startTime": 0,
+    "type": "MANY",
+  },
+  "id": "id",
+  "name": undefined,
+  "oneTime": undefined,
+  "url": undefined,
+}
+`;
