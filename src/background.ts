@@ -1,4 +1,4 @@
-import { alarmListner, AlarmName } from 'back';
+import { alarmListner, AlarmName } from './back';
 const main = () => {
     chrome.alarms.create(AlarmName.MINUTE, { periodInMinutes: 1 });
     let previousMinutes: number = null;
