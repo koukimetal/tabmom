@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`test for back updateNowDate 1`] = `
+Object {
+  "date": Object {
+    "nowDay": 2,
+    "nowMinutes": 1,
+  },
+  "type": 2,
+}
+`;
