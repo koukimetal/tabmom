@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { App } from './App';
 import { getRule, getCurrentTime, getRuleOrder } from './proxy';
-import { CurrentMap, RuleMap, SystemDate } from 'components/system/actions';
+import { CurrentMap, RuleMap, SystemDate } from './components/system/actions';
 import { calculateNowMinutes } from './shared';
 
 const main = async () => {
